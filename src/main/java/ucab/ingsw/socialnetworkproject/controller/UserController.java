@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ucab.ingsw.socialnetworkproject.Response.UserResponse;
 import ucab.ingsw.socialnetworkproject.command.UserCommand;
+import ucab.ingsw.socialnetworkproject.command.UserLoginCommand;
 import ucab.ingsw.socialnetworkproject.command.UserUpdateCommand;
 import ucab.ingsw.socialnetworkproject.service.UserService;
 
@@ -30,10 +31,14 @@ public class UserController {
         return ResponseEntity.ok(result);
     }
 
+    @RequestMapping(value = "/login", consumes = "application/json", method = RequestMethod.POST)
+    public ResponseEntity login(@Valid @RequestBody UserLoginCommand command) {
+        return userService.loginAuthenticator(command);
+    }
+
     @RequestMapping(value = "/update/{id}", consumes = "application/json", method = RequestMethod.PUT)
     public ResponseEntity update(@Valid @RequestBody UserUpdateCommand command, @PathVariable("id") String id) {
-        boolean result = userService.updateUser(command, id);
-        return ResponseEntity.ok(result);
+        return userService.updateUser(command, id);
     }
 
     @RequestMapping(value = "/search/{name}", method = RequestMethod.GET)
