@@ -5,8 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ucab.ingsw.socialnetworkproject.Response.UserResponse;
-import ucab.ingsw.socialnetworkproject.command.UserCommand;
+import ucab.ingsw.socialnetworkproject.response.UserResponse;
+import ucab.ingsw.socialnetworkproject.command.UserSingUpCommand;
+import ucab.ingsw.socialnetworkproject.command.UserLoginCommand;
 import ucab.ingsw.socialnetworkproject.command.UserUpdateCommand;
 import ucab.ingsw.socialnetworkproject.service.UserService;
 
@@ -25,15 +26,18 @@ public class UserController {
 
 
     @RequestMapping(value = "/register", consumes = "application/json", method = RequestMethod.POST)
-    public ResponseEntity register(@Valid @RequestBody UserCommand command) {
-        boolean result = userService.registerUser(command);
-        return ResponseEntity.ok(result);
+    public ResponseEntity register(@Valid @RequestBody UserSingUpCommand command) {
+        return userService.registerUser(command);
+    }
+
+    @RequestMapping(value = "/login", consumes = "application/json", method = RequestMethod.POST)
+    public ResponseEntity login(@Valid @RequestBody UserLoginCommand command) {
+        return userService.loginAuthenticator(command);
     }
 
     @RequestMapping(value = "/update/{id}", consumes = "application/json", method = RequestMethod.PUT)
     public ResponseEntity update(@Valid @RequestBody UserUpdateCommand command, @PathVariable("id") String id) {
-        boolean result = userService.updateUser(command, id);
-        return ResponseEntity.ok(result);
+        return userService.updateUser(command, id);
     }
 
     @RequestMapping(value = "/search/{name}", method = RequestMethod.GET)

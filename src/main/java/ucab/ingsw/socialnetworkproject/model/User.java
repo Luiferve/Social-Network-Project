@@ -12,7 +12,6 @@ import java.util.Date;
 public class User  implements Serializable {
     @Id
     private long id;
-
     private String firstName;
     private String lastName;
     private String email;
