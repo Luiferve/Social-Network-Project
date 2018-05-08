@@ -4,9 +4,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import ucab.ingsw.socialnetworkproject.Response.ErrorResponse;
-import ucab.ingsw.socialnetworkproject.Response.UserResponse;
-import ucab.ingsw.socialnetworkproject.command.UserCommand;
+import ucab.ingsw.socialnetworkproject.response.AlertResponse;
+import ucab.ingsw.socialnetworkproject.response.UserResponse;
+import ucab.ingsw.socialnetworkproject.command.UserSingUpCommand;
 import ucab.ingsw.socialnetworkproject.command.UserLoginCommand;
 import ucab.ingsw.socialnetworkproject.command.UserUpdateCommand;
 import ucab.ingsw.socialnetworkproject.model.User;
@@ -25,7 +25,7 @@ public class UserService {
 
 
 
-    private User buildNewUser(UserCommand command) {
+    private User buildNewUser(UserSingUpCommand command) {
         User user = new User();
         user.setId(System.currentTimeMillis());
         user.setFirstName(command.getFirstName());
@@ -47,22 +47,27 @@ public class UserService {
         return user;
     }
 
-    private ErrorResponse buildErrorResponse(String message){
-        ErrorResponse response = new ErrorResponse();
+    private AlertResponse buildAlertResponse(String message){
+        AlertResponse response = new AlertResponse();
         response.setMessage(message);
         response.setTimestamp(LocalDateTime.now());
         return response;
     }
 
-    public boolean registerUser(UserCommand command) {
+    public ResponseEntity<Object>  registerUser(UserSingUpCommand command) {
         log.debug("About to process [{}]", command);
 
-        User user = buildNewUser(command);
-        user =  userRepository.save(user);
+        if(userRepository.existsByEmail(command.getEmail())){
+            return ResponseEntity.badRequest().body(buildAlertResponse("El usuario ya se encuentra registrado en el sistema."));
+        }
+        else {
+            User user = buildNewUser(command);
+            user = userRepository.save(user);
 
-        log.info("Registered user with ID={}", user.getId());
+            log.info("Registered user with ID={}", user.getId());
 
-        return true;
+            return ResponseEntity.ok().body(buildAlertResponse("Operacion Exitosa."));
+        }
     }
 
     public ResponseEntity<Object> updateUser(UserUpdateCommand command, String id) {
@@ -71,14 +76,14 @@ public class UserService {
         if (!userRepository.existsById(Long.parseLong(id))) {
             log.info("Cannot user with ID={}", id);
 
-            return ResponseEntity.badRequest().body(buildErrorResponse("Id no encontrado."));
+            return ResponseEntity.badRequest().body(buildAlertResponse("Id no encontrado."));
         } else {
             User user = buildExistingUser(command, id);
             user = userRepository.save(user);
 
             log.info("Updated user with ID={}", user.getId());
 
-            return ResponseEntity.ok().body(buildErrorResponse("Operacion Exitosa."));
+            return ResponseEntity.ok().body(buildAlertResponse("Operacion Exitosa."));
         }
     }
 
@@ -96,7 +101,7 @@ public class UserService {
         if(user == null){
             log.info("Cannot find user with email={}", command.getEmail());
 
-            return  ResponseEntity.badRequest().body(buildErrorResponse("Email no encontrado."));
+            return  ResponseEntity.badRequest().body(buildAlertResponse("Email no encontrado."));
         }
         else{
             if(user.getPassword().equals(command.getPassword())) {
@@ -112,7 +117,7 @@ public class UserService {
             else{
                 log.info("{} is not valid password for user {}", command.getPassword(), user.getId());
 
-                return  ResponseEntity.badRequest().body(buildErrorResponse("Contrasena Icorrecta."));
+                return  ResponseEntity.badRequest().body(buildAlertResponse("Contrasena Incorrecta."));
             }
         }
 

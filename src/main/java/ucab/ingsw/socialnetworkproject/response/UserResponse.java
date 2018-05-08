@@ -1,4 +1,4 @@
-package ucab.ingsw.socialnetworkproject.Response;
+package ucab.ingsw.socialnetworkproject.response;
 
 import lombok.Data;
 import lombok.ToString;
