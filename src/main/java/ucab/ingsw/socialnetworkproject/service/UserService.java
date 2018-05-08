@@ -3,7 +3,8 @@ package ucab.ingsw.socialnetworkproject.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ucab.ingsw.socialnetworkproject.command.UserSingUpCommand;
+import ucab.ingsw.socialnetworkproject.command.UserCommand;
+import ucab.ingsw.socialnetworkproject.command.UserUpdateCommand;
 import ucab.ingsw.socialnetworkproject.model.User;
 import ucab.ingsw.socialnetworkproject.repository.UserRepository;
 
@@ -19,7 +20,7 @@ public class UserService {
 
 
 
-    private User buildUser(UserSingUpCommand command) {
+    private User buildNewUser(UserCommand command) {
         User user = new User();
         user.setId(System.currentTimeMillis());
         user.setFirstName(command.getFirstName());
@@ -30,13 +31,35 @@ public class UserService {
         return user;
     }
 
-    public boolean registerUser(UserSingUpCommand command) {
+    private User buildExistingUser(UserUpdateCommand command, String id) {
+        User user = new User();
+        user.setId(Long.parseLong(id));
+        user.setFirstName(command.getFirstName());
+        user.setLastName(command.getLastName());
+        user.setEmail(command.getEmail());
+        user.setPassword(command.getPassword());
+
+        return user;
+    }
+
+    public boolean registerUser(UserCommand command) {
         log.debug("About to process [{}]", command);
 
-        User user = buildUser(command);
+        User user = buildNewUser(command);
         user =  userRepository.save(user);
 
-        log.info("Registered customer with ID={}", user.getId());
+        log.info("Registered user with ID={}", user.getId());
+
+        return true;
+    }
+
+    public boolean updateUser(UserUpdateCommand command, String id) {
+        log.debug("About to process [{}]", command);
+
+        User user = buildExistingUser(command, id);
+        user =  userRepository.save(user);
+
+        log.info("Updated user with ID={}", user.getId());
 
         return true;
     }
