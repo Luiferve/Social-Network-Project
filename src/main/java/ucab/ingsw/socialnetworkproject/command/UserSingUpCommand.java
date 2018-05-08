@@ -8,7 +8,7 @@ import javax.validation.constraints.*;
 
 @ToString
 @Data
-public class UserCommand implements Serializable {
+public class UserSingUpCommand implements Serializable {
 
     @Size(max = validationRules.FIRST_LAST_NAME_MAX_SIZE, message = "El nombre no puede contener mas de 50 caracteres.")
     @Pattern(regexp = validationRules.FIRST_LAST_NAME_REGEX, message = "El nombre posee caracteres invalidos.")
