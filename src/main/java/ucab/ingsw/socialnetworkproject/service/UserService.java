@@ -65,12 +65,19 @@ public class UserService {
             return ResponseEntity.badRequest().body(buildAlertResponse("El usuario ya se encuentra registrado en el sistema."));
         }
         else {
-            User user = buildNewUser(command);
-            user = userRepository.save(user);
+            if(!command.getPassword().equals(command.getConfirmationPassword())) {
+                log.info("Missmatching passwords.");
+                return ResponseEntity.badRequest().body(buildAlertResponse("Las contrasenas no coinciden"));
+            }
 
-            log.info("Registered user with ID={}", user.getId());
+            else {
+                User user = buildNewUser(command);
+                user = userRepository.save(user);
 
-            return ResponseEntity.ok().body(buildAlertResponse("Operacion Exitosa."));
+                log.info("Registered user with ID={}", user.getId());
+
+                return ResponseEntity.ok().body(buildAlertResponse("Operacion Exitosa."));
+            }
         }
     }
 
