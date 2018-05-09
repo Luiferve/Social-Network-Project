@@ -4,7 +4,6 @@ import lombok.Data;
 import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import java.io.Serializable;
-import java.util.Date;
 
 @Data
 @ToString
@@ -16,4 +15,5 @@ public class User  implements Serializable {
     private String lastName;
     private String email;
     private String password;
+    private String dateOfBirth;
 }

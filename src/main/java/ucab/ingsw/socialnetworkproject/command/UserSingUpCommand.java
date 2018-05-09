@@ -10,10 +10,15 @@ import javax.validation.constraints.*;
 @Data
 public class UserSingUpCommand implements Serializable {
 
+
+    @NotNull(message = "Se requiere fecha de nombre.")
+    @NotEmpty(message = "Se requiere fecha de nombre.")
     @Size(max = validationRules.FIRST_LAST_NAME_MAX_SIZE, message = "El nombre no puede contener mas de 50 caracteres.")
     @Pattern(regexp = validationRules.FIRST_LAST_NAME_REGEX, message = "El nombre posee caracteres invalidos.")
     private String firstName;
 
+    @NotNull(message = "Se requiere fecha de nombre.")
+    @NotEmpty(message = "Se requiere fecha de nombre.")
     @Size(max = validationRules.FIRST_LAST_NAME_MAX_SIZE, message = "El apellido no puede contener mas de 50 caracteres.")
     @Pattern(regexp = validationRules.FIRST_LAST_NAME_REGEX, message = "El apellido posee caracteres invalidos.")
     private String lastName;
@@ -33,4 +38,8 @@ public class UserSingUpCommand implements Serializable {
     @NotEmpty(message = "Se requiere contraseña de confrimacion.")
     @Size(min = validationRules.PASSWORD_MIN_SIZE, message = "La contraseña de confirmacion debe contener al menos 6 caracteres.")
     private String confirmationPassword;
+
+    @NotNull(message = "Se requiere fecha de nacimiento.")
+    @NotEmpty(message = "Se requiere fecha de nacimiento.")
+    private String dateOfBirth;
 }

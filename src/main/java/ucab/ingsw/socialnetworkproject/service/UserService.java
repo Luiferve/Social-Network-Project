@@ -32,6 +32,7 @@ public class UserService {
         user.setLastName(command.getLastName());
         user.setEmail(command.getEmail());
         user.setPassword(command.getPassword());
+        user.setDateOfBirth(command.getDateOfBirth());
 
         return user;
     }
@@ -43,6 +44,7 @@ public class UserService {
         user.setLastName(command.getLastName());
         user.setEmail(command.getEmail());
         user.setPassword(command.getPassword());
+        user.setDateOfBirth(command.getDateOfBirth());
 
         return user;
     }
@@ -54,10 +56,12 @@ public class UserService {
         return response;
     }
 
-    public ResponseEntity<Object>  registerUser(UserSingUpCommand command) {
+    public ResponseEntity<Object> registerUser(UserSingUpCommand command) {
         log.debug("About to process [{}]", command);
 
         if(userRepository.existsByEmail(command.getEmail())){
+            log.info("email {} already registered", command.getEmail());
+
             return ResponseEntity.badRequest().body(buildAlertResponse("El usuario ya se encuentra registrado en el sistema."));
         }
         else {
@@ -90,7 +94,7 @@ public class UserService {
     public List<User> findUserByName(String name){
         List<User> users = userRepository.findByFirstNameIgnoreCaseContaining(name);
 
-        log.info("Found {} records with the partial email address={}", users.size(), name);
+        log.info("Found {} records with the partial name={}", users.size(), name);
 
         return users;
     }
@@ -112,6 +116,7 @@ public class UserService {
                 userResponse.setLastName(user.getLastName());
                 userResponse.setEmail(user.getEmail());
                 userResponse.setId(user.getId());
+                userResponse.setDateOfBirth(user.getDateOfBirth());
                 return ResponseEntity.ok(userResponse);
             }
             else{

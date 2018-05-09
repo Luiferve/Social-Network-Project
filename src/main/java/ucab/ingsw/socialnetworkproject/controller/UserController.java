@@ -49,6 +49,7 @@ public class UserController {
             userResponse.setLastName(it.getLastName());
             userResponse.setEmail(it.getEmail());
             userResponse.setId(it.getId());
+            userResponse.setDateOfBirth(it.getDateOfBirth());
 
             response.add(userResponse);
         });

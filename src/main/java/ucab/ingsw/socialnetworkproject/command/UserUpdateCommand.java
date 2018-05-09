@@ -30,4 +30,8 @@ public class UserUpdateCommand implements Serializable{
     @Size(min = validationRules.PASSWORD_MIN_SIZE, message = "La contraseña debe contener al menos 6 caracteres.")
     private String password;
 
+    @NotNull(message = "Se requiere fecha de nacimiento.")
+    @NotEmpty(message = "Se requiere fecha de nacimiento.")
+    private String dateOfBirth;
+
 }
