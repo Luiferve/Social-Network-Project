@@ -112,7 +112,7 @@ public class UserService {
         if(user == null){
             log.info("Cannot find user with email={}", command.getEmail());
 
-            return  ResponseEntity.badRequest().body(buildAlertResponse("Email no encontrado."));
+            return  ResponseEntity.badRequest().body(buildAlertResponse("invalid_mail"));
         }
         else{
             if(user.getPassword().equals(command.getPassword())) {
@@ -129,7 +129,7 @@ public class UserService {
             else{
                 log.info("{} is not valid password for user {}", command.getPassword(), user.getId());
 
-                return  ResponseEntity.badRequest().body(buildAlertResponse("Contrasena Incorrecta."));
+                return  ResponseEntity.badRequest().body(buildAlertResponse("invalid_pass "));
             }
         }
 
