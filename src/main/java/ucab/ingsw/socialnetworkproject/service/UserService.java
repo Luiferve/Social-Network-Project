@@ -32,6 +32,7 @@ public class UserService {
         user.setLastName(command.getLastName());
         user.setEmail(command.getEmail());
         user.setPassword(command.getPassword());
+        user.setDateOfBirth(command.getDateOfBirth());
 
         return user;
     }
@@ -43,6 +44,7 @@ public class UserService {
         user.setLastName(command.getLastName());
         user.setEmail(command.getEmail());
         user.setPassword(command.getPassword());
+        user.setDateOfBirth(command.getDateOfBirth());
 
         return user;
     }
@@ -54,19 +56,28 @@ public class UserService {
         return response;
     }
 
-    public ResponseEntity<Object>  registerUser(UserSingUpCommand command) {
+    public ResponseEntity<Object> registerUser(UserSingUpCommand command) {
         log.debug("About to process [{}]", command);
 
         if(userRepository.existsByEmail(command.getEmail())){
+            log.info("email {} already registered", command.getEmail());
+
             return ResponseEntity.badRequest().body(buildAlertResponse("El usuario ya se encuentra registrado en el sistema."));
         }
         else {
-            User user = buildNewUser(command);
-            user = userRepository.save(user);
+            if(!command.getPassword().equals(command.getConfirmationPassword())) {
+                log.info("Missmatching passwords.");
+                return ResponseEntity.badRequest().body(buildAlertResponse("Las contrasenas no coinciden"));
+            }
 
-            log.info("Registered user with ID={}", user.getId());
+            else {
+                User user = buildNewUser(command);
+                user = userRepository.save(user);
 
-            return ResponseEntity.ok().body(buildAlertResponse("Operacion Exitosa."));
+                log.info("Registered user with ID={}", user.getId());
+
+                return ResponseEntity.ok().body(buildAlertResponse("Operacion Exitosa."));
+            }
         }
     }
 
@@ -90,7 +101,7 @@ public class UserService {
     public List<User> findUserByName(String name){
         List<User> users = userRepository.findByFirstNameIgnoreCaseContaining(name);
 
-        log.info("Found {} records with the partial email address={}", users.size(), name);
+        log.info("Found {} records with the partial name={}", users.size(), name);
 
         return users;
     }
@@ -112,6 +123,7 @@ public class UserService {
                 userResponse.setLastName(user.getLastName());
                 userResponse.setEmail(user.getEmail());
                 userResponse.setId(user.getId());
+                userResponse.setDateOfBirth(user.getDateOfBirth());
                 return ResponseEntity.ok(userResponse);
             }
             else{

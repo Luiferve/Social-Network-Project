@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
+
+@CrossOrigin
 @RestController
 @RequestMapping(value = "/user", produces = "application/json")
 public class UserController {
@@ -49,6 +51,7 @@ public class UserController {
             userResponse.setLastName(it.getLastName());
             userResponse.setEmail(it.getEmail());
             userResponse.setId(it.getId());
+            userResponse.setDateOfBirth(it.getDateOfBirth());
 
             response.add(userResponse);
         });
