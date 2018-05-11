@@ -17,7 +17,7 @@ import java.util.List;
 
 @Slf4j
 
-@CrossOrigin
+@CrossOrigin //Permite conexion desde aplicacion externa.
 @RestController
 @RequestMapping(value = "/user", produces = "application/json")
 public class UserController {

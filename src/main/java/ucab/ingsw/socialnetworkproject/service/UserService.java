@@ -66,7 +66,7 @@ public class UserService {
         }
         else {
             if(!command.getPassword().equals(command.getConfirmationPassword())) {
-                log.info("Missmatching passwords.");
+                log.info("Mismatching passwords.");
                 return ResponseEntity.badRequest().body(buildAlertResponse("Las contrasenas no coinciden"));
             }
 
@@ -87,7 +87,7 @@ public class UserService {
         if (!userRepository.existsById(Long.parseLong(id))) {
             log.info("Cannot find user with ID={}", id);
 
-            return ResponseEntity.badRequest().body(buildAlertResponse("Id no encontrado."));
+            return ResponseEntity.badRequest().body(buildAlertResponse("invalid_Id"));
         } else {
             User user = buildExistingUser(command, id);
             user = userRepository.save(user);
