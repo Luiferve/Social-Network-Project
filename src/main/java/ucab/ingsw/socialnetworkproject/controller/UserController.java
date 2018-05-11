@@ -59,5 +59,11 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+
+    @RequestMapping(value = "/get/{id}", method = RequestMethod.GET)
+    public ResponseEntity getUser(@PathVariable("id") String id) {
+        return userService.getUserById(id);
+    }
+
 }
 

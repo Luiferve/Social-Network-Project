@@ -85,7 +85,7 @@ public class UserService {
         log.debug("About to process [{}]", command);
 
         if (!userRepository.existsById(Long.parseLong(id))) {
-            log.info("Cannot user with ID={}", id);
+            log.info("Cannot find user with ID={}", id);
 
             return ResponseEntity.badRequest().body(buildAlertResponse("Id no encontrado."));
         } else {
@@ -131,6 +131,28 @@ public class UserService {
 
                 return  ResponseEntity.badRequest().body(buildAlertResponse("invalid_pass "));
             }
+        }
+
+    }
+
+    public ResponseEntity<Object> getUserById(String id){
+        log.debug("About to process [{}]", id);
+
+        if (!userRepository.existsById(Long.parseLong(id))) {
+            log.info("Cannot find user with ID={}", id);
+
+            return ResponseEntity.badRequest().body(buildAlertResponse("invalid_Id"));
+        }
+        else {
+            User user = userRepository.findById(Long.parseLong(id)).get();
+            UserResponse userResponse = new UserResponse();
+            userResponse.setFirstName(user.getFirstName());
+            userResponse.setLastName(user.getLastName());
+            userResponse.setEmail(user.getEmail());
+            userResponse.setId(user.getId());
+            userResponse.setDateOfBirth(user.getDateOfBirth());
+            log.info("Returning info for user with ID={}", id);
+            return ResponseEntity.ok(userResponse);
         }
 
     }
