@@ -20,7 +20,7 @@ import java.util.List;
 @Service("userService")
 public class UserService {
 
-    @Autowired
+    @Autowired //Inyecta el repositorio de usuario al momento de ejecucion.
     private UserRepository userRepository;
 
 
