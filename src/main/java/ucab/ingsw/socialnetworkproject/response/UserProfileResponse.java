@@ -3,6 +3,7 @@ package ucab.ingsw.socialnetworkproject.response;
 import lombok.Data;
 import lombok.ToString;
 
+//Respuesta enviada para peticiones relacionadas con el perfil (peticion del equipo front-end)
 @Data
 @ToString
 public class UserProfileResponse {

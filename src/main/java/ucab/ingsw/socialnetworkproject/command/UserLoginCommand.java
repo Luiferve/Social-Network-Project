@@ -9,6 +9,8 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 
+
+//Comando que se recibe para el inicio de sesion
 @ToString
 @Data
 public class UserLoginCommand implements Serializable {

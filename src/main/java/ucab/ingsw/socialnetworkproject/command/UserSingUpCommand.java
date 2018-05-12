@@ -6,6 +6,7 @@ import lombok.ToString;
 
 import javax.validation.constraints.*;
 
+//Comando que se recibe para el registro de un usuario nuevo
 @ToString
 @Data
 public class UserSingUpCommand implements Serializable {

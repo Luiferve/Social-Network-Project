@@ -6,6 +6,7 @@ import lombok.ToString;
 
 import javax.validation.constraints.*;
 
+//Comando que se recibe para actualizar los datos de un usuario ya registrado
 @ToString
 @Data
 public class UserUpdateCommand implements Serializable{

@@ -118,7 +118,7 @@ public class UserService {
         }
         else{
             if(user.getPassword().equals(command.getPassword())) { //si las contrasenas coinciden se envia la informacion del usuario
-                log.info("Successful login for user ={}", user.getId());
+                log.info("Successful login for user={}", user.getId());
 
                 UserNormalResponse userNormalResponse = new UserNormalResponse();
                 userNormalResponse.setFirstName(user.getFirstName());
@@ -140,8 +140,8 @@ public class UserService {
     public ResponseEntity<Object> getUserById(String id){
         log.debug("About to process [{}]", id);
 
-        User user = searchUserById(id);
-        if (user == null) {
+        User user = searchUserById(id); //Se busca el usuario con el Id proporcionado
+        if (user == null) {  //Se retorna mensaje si no existe
             log.info("Cannot find user with ID={}", id);
 
             return ResponseEntity.badRequest().body(buildAlertResponse("invalid_Id"));
@@ -156,7 +156,7 @@ public class UserService {
             userProfileResponse.setDateOfBirth(user.getDateOfBirth());
 
             log.info("Returning info for user with ID={}", id);
-            return ResponseEntity.ok(userProfileResponse);
+            return ResponseEntity.ok(userProfileResponse); //De existir usario se retorna su informacion
         }
 
     }
@@ -164,11 +164,11 @@ public class UserService {
     public ArrayList<UserNormalResponse> searchUsersByName(String search){
         log.debug("About to process search for name [{}]", search);
         ArrayList<UserNormalResponse> response = new ArrayList<>();
-        userRepository.findAll().forEach(it->{
+        userRepository.findAll().forEach(it->{ //Para cada usuario registrado en la base de datos
             String name = it.getFirstName();
             String lastName = it.getLastName();
-            String fullName = name.concat(lastName);
-            if(fullName.toLowerCase().contains(search.toLowerCase())) {
+            String fullName = name.concat(lastName); // se combina su nombre y apellido
+            if(fullName.toLowerCase().contains(search.toLowerCase())) { //Se verifica si la combinacion nombre completo contiene a la variable de busqueda
                 UserNormalResponse userNormalResponse = new UserNormalResponse();
                 userNormalResponse.setFirstName(it.getFirstName());
                 userNormalResponse.setLastName(it.getLastName());
@@ -176,7 +176,7 @@ public class UserService {
                 userNormalResponse.setId(it.getId());
                 userNormalResponse.setDateOfBirth(it.getDateOfBirth());
 
-                response.add(userNormalResponse);
+                response.add(userNormalResponse); //Se agrega respuesta a la lista
             }
         });
         return response;
@@ -187,7 +187,7 @@ public class UserService {
         if(response.isEmpty()){
             log.info("Cannot find user with name={}", search);
 
-            return ResponseEntity.badRequest().body(buildAlertResponse("invalid_Id"));
+            return ResponseEntity.badRequest().body(buildAlertResponse("No result found"));
         }
         else {
             log.info("Returning info for user with name={}", search);
