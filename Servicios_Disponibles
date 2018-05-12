@@ -1,0 +1,188 @@
+                    Registro de Usuario:
+
+URL: https://ignsw201825-snproject.herokuapp.com/user/register
+
+Petición tipo: POST
+
+Header: Content-Type--------application/json
+
+Body:
+{
+    "firstName": "nombre",
+    "lastName": "apellido",
+    "email": "direccion de correo electrónico",
+    "password": "contraseña",
+    "confirmationPassword": "contraseña",
+    "dateOfBirth": "fecha de nacimiento"
+}
+
+Respuesta:
+
+Json con los datos del Usuario almacenado en la base de datos.
+
+Codigo: 200 OK
+
+Formato:
+
+{
+    "id": "ID"
+    "firstName": "nombre",
+    "lastName": "apellido",
+    "email": "direccion de correo electrónico",
+    "dateOfBirth": "fecha de nacimiento"
+}
+
+
+Errores:
+
+-Fallo en la validación*
+-Correo electrónico ya se encuentra registrado en la base de datos
+-Contraseñas no coinciden
+
+
+
+                    Inicio de Sesión:
+
+URL: https://ignsw201825-snproject.herokuapp.com/user/login
+
+Petición tipo: POST
+
+Header: Content-Type--------application/json
+
+Body:
+{
+    "email": "direccion de correo electrónico",
+    "password": "contraseña",
+}
+
+Respuesta:
+
+Json con los datos del Usuario que inicia Sesión
+
+Codigo: 200 OK
+
+Formato:
+
+{
+    "id": "ID"
+    "firstName": "nombre",
+    "lastName": "apellido",
+    "email": "direccion de correo electrónico",
+    "dateOfBirth": "fecha de nacimiento"
+}
+
+Errores:
+
+-Fallo en la validación*
+-Correo electrónico no existe en la base de datos
+-Contraseña no coincide
+
+
+
+                    Modificacion de Datos de Usuario Existente
+
+URL: https://ignsw201825-snproject.herokuapp.com/user/update/id
+
+Donde: id es el ID del usuario que se desea modificar
+
+Petición tipo: PUT
+
+Header: Content-Type--------application/json
+
+Body:
+{
+    "firstName": "nombre",
+    "lastName": "apellido",
+    "email": "direccion de correo electrónico",
+    "password": "contraseña",
+    "dateOfBirth": "fecha de nacimiento"
+}
+
+Respuesta:
+
+Json con mensaje de operación exitosa.
+
+Codigo: 200 OK
+
+Errores:
+
+-Fallo en la validación*
+-Id invalido
+-Nuevo correo electrónico ya se encuentra registrado en la base de datos
+
+
+
+                    Obtener Usuario por Id
+
+URL: https://ignsw201825-snproject.herokuapp.com/user/get/id
+
+Donde: id es el ID del usuario que se desea obtener
+
+Petición tipo: GET
+
+Respuesta:
+
+Json con los datos del Usuario
+
+Codigo: 200 OK
+
+Formato:
+
+{
+    "id": "ID"
+    "firstName": "nombre",
+    "lastName": "apellido",
+    "email": "direccion de correo electrónico",
+    "password": "contraseña"
+    "dateOfBirth": "fecha de nacimiento"
+}
+
+Errores:
+
+-Id invalido
+
+
+
+                    Buscar Usuario por Nombre
+
+URL: https://ignsw201825-snproject.herokuapp.com/user/search/name
+
+Donde name puede ser:
+-Solo Nombre
+-Solo Apellido
+-Parte del Nombre
+-Pate del Apellido
+-Nombre y apellido (se colocara nombre y apellidos sin separacion ej: Si se desea buscar Daniel Rojas, se debe colocar DanielRojas)
+
+Petición tipo: GET
+
+Respuesta:
+
+Json con lista de usuarios en cuyo nombre o apellido este contenida la variable name
+
+Codigo: 200 OK
+
+Formato de cada entrada en la lista:
+
+{
+    "id": "ID"
+    "firstName": "nombre",
+    "lastName": "apellido",
+    "email": "direccion de correo electrónico",
+    "dateOfBirth": "fecha de nacimiento"
+}
+
+Errores:
+
+-No se encontraron resultados que contengan la variable name
+
+
+
+*Validaciones existentes:
+
+-Campos Vacios o nulos
+-Caracteres invalidos en nombre o apellido
+-Máxima longitud de nombre y apellido: 50 caracteres
+-Mínima longitud de contraseña: 6 caracteres
+-Mínima longitud de email: 10 caracteres
+-Formato de email invalido

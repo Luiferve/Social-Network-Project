@@ -77,7 +77,7 @@ public class UserService {
         else {
             if(!command.getPassword().equals(command.getConfirmationPassword())) { //se compara la contrasena con la contrasena de confirmacion
                 log.info("Mismatching passwords.");
-                return ResponseEntity.badRequest().body(buildAlertResponse("Las contrasenas no coinciden"));
+                return ResponseEntity.badRequest().body(buildAlertResponse("Las contraseñas no coinciden"));
             }
 
             else { // si el email no existe y las contrasenas coinciden se agrega el usuario a la base de datos
@@ -86,7 +86,7 @@ public class UserService {
 
                 log.info("Registered user with ID={}", user.getId());
 
-                return ResponseEntity.ok().body(buildAlertResponse("Operacion Exitosa."));
+                return ResponseEntity.ok().body(buildAlertResponse("Operación Exitosa."));
             }
         }
     }
@@ -98,13 +98,23 @@ public class UserService {
             log.info("Cannot find user with ID={}", id);
 
             return ResponseEntity.badRequest().body(buildAlertResponse("invalid_Id"));
-        } else {                                              //se actualiza la informacion del usuario
-            User user = buildExistingUser(command, id);
-            user = userRepository.save(user);
+        } else {
 
-            log.info("Updated user with ID={}", user.getId());
+            String emailOriginal = userRepository.findById(Long.parseLong(id)).get().getEmail();
+            String emailNuevo = command.getEmail();
+            if((userRepository.existsByEmail(emailNuevo)) && !(emailNuevo.equals(emailOriginal)) ){ // se revisa si el email ya existe en la base de datos
+                log.info("email {} already registered", command.getEmail());
 
-            return ResponseEntity.ok().body(buildAlertResponse("Operacion Exitosa."));
+                return ResponseEntity.badRequest().body(buildAlertResponse("El email ya se encuentra registrado en el sistema."));
+            }
+            else {    //se actualiza la informacion del usuario
+                User user = buildExistingUser(command, id);
+                user = userRepository.save(user);
+
+                log.info("Updated user with ID={}", user.getId());
+
+                return ResponseEntity.ok().body(buildAlertResponse("Operación Exitosa."));
+            }
         }
     }
 
