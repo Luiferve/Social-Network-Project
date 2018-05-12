@@ -56,6 +56,15 @@ public class UserService {
         return response;
     }
 
+    private User searchUserById(String id){  //Busqueda de usuario por id proporcionado
+        if(userRepository.findById(Long.parseLong(id)).isPresent()){ //se verifica que exista dicho id en la base de datos
+            User user = userRepository.findById(Long.parseLong(id)).get();
+            return user;
+        }
+        else
+            return null;
+    }
+
     public ResponseEntity<Object> registerUser(UserSingUpCommand command) { //registro de usuarios
         log.debug("About to process [{}]", command);
 
@@ -98,14 +107,6 @@ public class UserService {
         }
     }
 
-    public List<User> findUserByName(String name){
-        List<User> users = userRepository.findByFirstNameIgnoreCaseContaining(name); //se busca un usuario cuyo nombre contenga la variable de busqueda
-
-        log.info("Found {} records with the partial name={}", users.size(), name);
-
-        return users;
-    }
-
     public ResponseEntity<Object> loginAuthenticator(UserLoginCommand command) {
         log.debug("About to process [{}]", command);
         User user = userRepository.findByEmail(command.getEmail());  //se verifica si existe el email recivido por comando
@@ -138,13 +139,13 @@ public class UserService {
     public ResponseEntity<Object> getUserById(String id){
         log.debug("About to process [{}]", id);
 
-        if (!userRepository.existsById(Long.parseLong(id))) {
+        User user = searchUserById(id);
+        if (user == null) {
             log.info("Cannot find user with ID={}", id);
 
             return ResponseEntity.badRequest().body(buildAlertResponse("invalid_Id"));
         }
         else {
-            User user = userRepository.findById(Long.parseLong(id)).get(); //se busca el usuario cuyo id coincida con la variable de busqueda
             UserResponse userResponse = new UserResponse();
             userResponse.setFirstName(user.getFirstName());
             userResponse.setLastName(user.getLastName());
@@ -155,5 +156,13 @@ public class UserService {
             return ResponseEntity.ok(userResponse);
         }
 
+    }
+
+    public List<User> findUserByName(String name){
+        List<User> users = userRepository.findByFirstNameIgnoreCaseContaining(name); //se busca un usuario cuyo nombre contenga la variable de busqueda
+
+        log.info("Found {} records with the partial name={}", users.size(), name);
+
+        return users;
     }
 }
