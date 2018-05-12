@@ -13,6 +13,7 @@ import ucab.ingsw.socialnetworkproject.model.User;
 import ucab.ingsw.socialnetworkproject.repository.UserRepository;
 import ucab.ingsw.socialnetworkproject.response.UserProfileResponse;
 
+import javax.validation.constraints.Digits;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
@@ -57,13 +58,17 @@ public class UserService {
         return response;
     }
 
-    private User searchUserById(String id){  //Busqueda de usuario por id proporcionado
-        if(userRepository.findById(Long.parseLong(id)).isPresent()){ //se verifica que exista dicho id en la base de datos
-            User user = userRepository.findById(Long.parseLong(id)).get();
-            return user;
-        }
-        else
+    private User searchUserById(String id) {  //Busqueda de usuario por id proporcionado
+        try {
+            if(userRepository.findById(Long.parseLong(id)).isPresent()){ //se verifica que exista dicho id en la base de datos
+                User user = userRepository.findById(Long.parseLong(id)).get();
+                return user;
+            }
+            else
+                return null;
+        } catch (NumberFormatException e) {
             return null;
+        }
     }
 
     public ResponseEntity<Object> registerUser(UserSingUpCommand command) { //registro de usuarios
@@ -93,34 +98,38 @@ public class UserService {
 
     public ResponseEntity<Object> updateUser(UserUpdateCommand command, String id) {
         log.debug("About to process [{}]", command);
+        try {
+            if (!userRepository.existsById(Long.parseLong(id))) { //se verifica si el id proporcionado es correcto
+                log.info("Cannot find user with ID={}", id);
 
-        if (!userRepository.existsById(Long.parseLong(id))) { //se verifica si el id proporcionado es correcto
+                return ResponseEntity.badRequest().body(buildAlertResponse("invalid_Id"));
+            } else {
+
+                String emailOriginal = userRepository.findById(Long.parseLong(id)).get().getEmail();
+                String emailNuevo = command.getEmail();
+                if ((userRepository.existsByEmail(emailNuevo)) && !(emailNuevo.equals(emailOriginal))) { // se revisa si el email ya existe en la base de datos
+                    log.info("email {} already registered", command.getEmail());
+
+                    return ResponseEntity.badRequest().body(buildAlertResponse("El email ya se encuentra registrado en el sistema."));
+                } else {    //se actualiza la informacion del usuario
+                    User user = buildExistingUser(command, id);
+                    user = userRepository.save(user);
+
+                    log.info("Updated user with ID={}", user.getId());
+
+                    return ResponseEntity.ok().body(buildAlertResponse("Operación Exitosa."));
+                }
+            }
+        } catch(NumberFormatException e){
             log.info("Cannot find user with ID={}", id);
 
             return ResponseEntity.badRequest().body(buildAlertResponse("invalid_Id"));
-        } else {
-
-            String emailOriginal = userRepository.findById(Long.parseLong(id)).get().getEmail();
-            String emailNuevo = command.getEmail();
-            if((userRepository.existsByEmail(emailNuevo)) && !(emailNuevo.equals(emailOriginal)) ){ // se revisa si el email ya existe en la base de datos
-                log.info("email {} already registered", command.getEmail());
-
-                return ResponseEntity.badRequest().body(buildAlertResponse("El email ya se encuentra registrado en el sistema."));
-            }
-            else {    //se actualiza la informacion del usuario
-                User user = buildExistingUser(command, id);
-                user = userRepository.save(user);
-
-                log.info("Updated user with ID={}", user.getId());
-
-                return ResponseEntity.ok().body(buildAlertResponse("Operación Exitosa."));
-            }
         }
     }
 
     public ResponseEntity<Object> loginAuthenticator(UserLoginCommand command) {
         log.debug("About to process [{}]", command);
-        User user = userRepository.findByEmail(command.getEmail());  //se verifica si existe el email recivido por comando
+        User user = userRepository.findByEmail(command.getEmail());  //se verifica si existe el email recibido por comando
         if(user == null){
             log.info("Cannot find user with email={}", command.getEmail());
 
@@ -141,7 +150,7 @@ public class UserService {
             else{
                 log.info("{} is not valid password for user {}", command.getPassword(), user.getId());
 
-                return  ResponseEntity.badRequest().body(buildAlertResponse("invalid_pass "));
+                return  ResponseEntity.badRequest().body(buildAlertResponse("invalid_pass"));
             }
         }
 
@@ -154,7 +163,7 @@ public class UserService {
         if (user == null) {  //Se retorna mensaje si no existe
             log.info("Cannot find user with ID={}", id);
 
-            return ResponseEntity.badRequest().body(buildAlertResponse("invalid_Id"));
+            return ResponseEntity.badRequest().body(buildAlertResponse("invalid_Id."));
         }
         else {
             UserProfileResponse userProfileResponse = new UserProfileResponse();
