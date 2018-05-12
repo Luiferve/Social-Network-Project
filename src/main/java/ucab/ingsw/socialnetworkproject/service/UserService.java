@@ -5,15 +5,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import ucab.ingsw.socialnetworkproject.response.AlertResponse;
-import ucab.ingsw.socialnetworkproject.response.UserResponse;
+import ucab.ingsw.socialnetworkproject.response.UserNormalResponse;
 import ucab.ingsw.socialnetworkproject.command.UserSingUpCommand;
 import ucab.ingsw.socialnetworkproject.command.UserLoginCommand;
 import ucab.ingsw.socialnetworkproject.command.UserUpdateCommand;
 import ucab.ingsw.socialnetworkproject.model.User;
 import ucab.ingsw.socialnetworkproject.repository.UserRepository;
+import ucab.ingsw.socialnetworkproject.response.UserProfileResponse;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.ArrayList;
 
 @Slf4j
 
@@ -119,13 +120,13 @@ public class UserService {
             if(user.getPassword().equals(command.getPassword())) { //si las contrasenas coinciden se envia la informacion del usuario
                 log.info("Successful login for user ={}", user.getId());
 
-                UserResponse userResponse = new UserResponse();
-                userResponse.setFirstName(user.getFirstName());
-                userResponse.setLastName(user.getLastName());
-                userResponse.setEmail(user.getEmail());
-                userResponse.setId(user.getId());
-                userResponse.setDateOfBirth(user.getDateOfBirth());
-                return ResponseEntity.ok(userResponse);
+                UserNormalResponse userNormalResponse = new UserNormalResponse();
+                userNormalResponse.setFirstName(user.getFirstName());
+                userNormalResponse.setLastName(user.getLastName());
+                userNormalResponse.setEmail(user.getEmail());
+                userNormalResponse.setId(user.getId());
+                userNormalResponse.setDateOfBirth(user.getDateOfBirth());
+                return ResponseEntity.ok(userNormalResponse);
             }
             else{
                 log.info("{} is not valid password for user {}", command.getPassword(), user.getId());
@@ -146,23 +147,51 @@ public class UserService {
             return ResponseEntity.badRequest().body(buildAlertResponse("invalid_Id"));
         }
         else {
-            UserResponse userResponse = new UserResponse();
-            userResponse.setFirstName(user.getFirstName());
-            userResponse.setLastName(user.getLastName());
-            userResponse.setEmail(user.getEmail());
-            userResponse.setId(user.getId());
-            userResponse.setDateOfBirth(user.getDateOfBirth());
+            UserProfileResponse userProfileResponse = new UserProfileResponse();
+            userProfileResponse.setId(user.getId());
+            userProfileResponse.setFirstName(user.getFirstName());
+            userProfileResponse.setLastName(user.getLastName());
+            userProfileResponse.setEmail(user.getEmail());
+            userProfileResponse.setPassword(user.getPassword());
+            userProfileResponse.setDateOfBirth(user.getDateOfBirth());
+
             log.info("Returning info for user with ID={}", id);
-            return ResponseEntity.ok(userResponse);
+            return ResponseEntity.ok(userProfileResponse);
         }
 
     }
 
-    public List<User> findUserByName(String name){
-        List<User> users = userRepository.findByFirstNameIgnoreCaseContaining(name); //se busca un usuario cuyo nombre contenga la variable de busqueda
+    public ArrayList<UserNormalResponse> searchUsersByName(String search){
+        log.debug("About to process search for name [{}]", search);
+        ArrayList<UserNormalResponse> response = new ArrayList<>();
+        userRepository.findAll().forEach(it->{
+            String name = it.getFirstName();
+            String lastName = it.getLastName();
+            String fullName = name.concat(lastName);
+            if(fullName.toLowerCase().contains(search.toLowerCase())) {
+                UserNormalResponse userNormalResponse = new UserNormalResponse();
+                userNormalResponse.setFirstName(it.getFirstName());
+                userNormalResponse.setLastName(it.getLastName());
+                userNormalResponse.setEmail(it.getEmail());
+                userNormalResponse.setId(it.getId());
+                userNormalResponse.setDateOfBirth(it.getDateOfBirth());
 
-        log.info("Found {} records with the partial name={}", users.size(), name);
+                response.add(userNormalResponse);
+            }
+        });
+        return response;
+    }
 
-        return users;
+    public ResponseEntity getUsersByName(String search){
+        ArrayList<UserNormalResponse> response = searchUsersByName(search);
+        if(response.isEmpty()){
+            log.info("Cannot find user with name={}", search);
+
+            return ResponseEntity.badRequest().body(buildAlertResponse("invalid_Id"));
+        }
+        else {
+            log.info("Returning info for user with name={}", search);
+            return ResponseEntity.ok(response);
+        }
     }
 }
