@@ -151,7 +151,7 @@ Donde name puede ser:
 -Solo Nombre
 -Solo Apellido
 -Parte del Nombre
--Pate del Apellido
+-Parte del Apellido
 -Nombre y apellido (se colocara nombre y apellidos sin separacion ej: Si se desea buscar Daniel Rojas, se debe colocar DanielRojas)
 
 Petición tipo: GET
