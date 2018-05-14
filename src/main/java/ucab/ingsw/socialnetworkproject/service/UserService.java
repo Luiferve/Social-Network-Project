@@ -13,6 +13,9 @@ import ucab.ingsw.socialnetworkproject.model.User;
 import ucab.ingsw.socialnetworkproject.repository.UserRepository;
 import ucab.ingsw.socialnetworkproject.response.UserProfileResponse;
 
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
@@ -24,7 +27,17 @@ public class UserService {
     @Autowired //Inyecta el repositorio de usuario al momento de ejecucion.
     private UserRepository userRepository;
 
-
+    private String getMD5(String text){ //encripta string usando MD5 hash
+        try{
+            MessageDigest md5 = MessageDigest.getInstance("MD5");
+            md5.update(StandardCharsets.UTF_8.encode(text));
+            return String.format("%032x", new BigInteger(1, md5.digest()));
+        }
+        catch (java.security.NoSuchAlgorithmException no_existe_el_algoritmo){
+            System.out.println("ERROR");
+        }
+        return null;
+    }
 
     private User buildNewUser(UserSingUpCommand command) { //crea un usuarion nuevo con los atributos recibidos por comando
         User user = new User();
@@ -34,6 +47,7 @@ public class UserService {
         user.setEmail(command.getEmail());
         user.setPassword(command.getPassword());
         user.setDateOfBirth(command.getDateOfBirth());
+        user.setAuthToken("0");
 
         return user;
     }
@@ -46,6 +60,7 @@ public class UserService {
         user.setEmail(command.getEmail());
         user.setPassword(command.getPassword());
         user.setDateOfBirth(command.getDateOfBirth());
+        user.setAuthToken(command.getAuthToken());
 
         return user;
     }
@@ -100,11 +115,16 @@ public class UserService {
             return ResponseEntity.badRequest().body(buildAlertResponse("invalid_Id"));
         } else {                                              //se actualiza la informacion del usuario
             User user = buildExistingUser(command, id);
-            user = userRepository.save(user);
+            if (command.getAuthToken().equals(userRepository.findByEmail(command.getEmail()).getAuthToken())){
+                user = userRepository.save(user);
 
-            log.info("Updated user with ID={}", user.getId());
+                log.info("Updated user with ID={}", user.getId());
 
-            return ResponseEntity.ok().body(buildAlertResponse("Operacion Exitosa."));
+                return ResponseEntity.ok().body(buildAlertResponse("Operacion Exitosa."));
+            } else {
+                return ResponseEntity.badRequest().body(buildAlertResponse("unauthenticated_user"));
+            }
+
         }
     }
 
@@ -118,20 +138,28 @@ public class UserService {
         }
         else{
             if(user.getPassword().equals(command.getPassword())) { //si las contrasenas coinciden se envia la informacion del usuario
-                log.info("Successful login for user={}", user.getId());
+                if (user.getAuthToken().equals("0")){ //si no tiene authorization token se permite el log in
+                    log.info("Successful login for user={}", user.getId());
 
-                UserNormalResponse userNormalResponse = new UserNormalResponse();
-                userNormalResponse.setFirstName(user.getFirstName());
-                userNormalResponse.setLastName(user.getLastName());
-                userNormalResponse.setEmail(user.getEmail());
-                userNormalResponse.setId(user.getId());
-                userNormalResponse.setDateOfBirth(user.getDateOfBirth());
-                return ResponseEntity.ok(userNormalResponse);
+                    UserNormalResponse userNormalResponse = new UserNormalResponse();
+                    userNormalResponse.setFirstName(user.getFirstName());
+                    userNormalResponse.setLastName(user.getLastName());
+                    userNormalResponse.setEmail(user.getEmail());
+                    userNormalResponse.setId(user.getId());
+                    userNormalResponse.setDateOfBirth(user.getDateOfBirth());
+                    String token=getMD5(user.getEmail())+"."+getMD5(Long.toString(System.currentTimeMillis()));
+                    user.setAuthToken(token);
+                    user =userRepository.save(user);
+                    userNormalResponse.setAuthToken(user.getAuthToken());
+                    return ResponseEntity.ok(userNormalResponse);
+                } else {
+                    return  ResponseEntity.badRequest().body(buildAlertResponse("already_logged_in"));
+                }
             }
             else{
                 log.info("{} is not valid password for user {}", command.getPassword(), user.getId());
 
-                return  ResponseEntity.badRequest().body(buildAlertResponse("invalid_pass "));
+                return  ResponseEntity.badRequest().body(buildAlertResponse("invalid_pass"));
             }
         }
 

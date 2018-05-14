@@ -19,4 +19,5 @@ public class User  implements Serializable {
     private String email;
     private String password;
     private String dateOfBirth;
+    private String authToken;
 }

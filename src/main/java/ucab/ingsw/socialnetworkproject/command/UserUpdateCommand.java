@@ -35,4 +35,8 @@ public class UserUpdateCommand implements Serializable{
     @NotEmpty(message = "Se requiere fecha de nacimiento.")
     private String dateOfBirth;
 
+    @NotNull(message = "Se requiere un token de autorizacion.")
+    @NotEmpty(message = "Se requiere un token de autorizacion.")
+    private String authToken;
+
 }
