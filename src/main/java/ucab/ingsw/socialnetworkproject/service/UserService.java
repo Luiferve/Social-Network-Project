@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import ucab.ingsw.socialnetworkproject.command.UserLogoutCommand;
 import ucab.ingsw.socialnetworkproject.response.AlertResponse;
 import ucab.ingsw.socialnetworkproject.response.UserNormalResponse;
 import ucab.ingsw.socialnetworkproject.command.UserSingUpCommand;
@@ -130,7 +131,7 @@ public class UserService {
 
     public ResponseEntity<Object> loginAuthenticator(UserLoginCommand command) {
         log.debug("About to process [{}]", command);
-        User user = userRepository.findByEmail(command.getEmail());  //se verifica si existe el email recivido por comando
+        User user = userRepository.findByEmail(command.getEmail());  //se verifica si existe el email recibido por comando
         if(user == null){
             log.info("Cannot find user with email={}", command.getEmail());
 
@@ -164,6 +165,31 @@ public class UserService {
         }
 
     }
+
+    public ResponseEntity<Object> logOut (UserLogoutCommand command){
+        log.debug("About to process [{}]", command);
+        User user = userRepository.findByEmail(command.getEmail());  //se verifica si existe el email recibido por comando
+        if(user == null){
+            log.info("Cannot find user with email={}", command.getEmail());
+
+            return  ResponseEntity.badRequest().body(buildAlertResponse("invalid_mail"));
+        }
+        else{
+            if (user.getAuthToken().equals("0")){ //si el usuario no ha iniciado sesion no se permite el logout
+                    return  ResponseEntity.badRequest().body(buildAlertResponse("already_logged_out"));
+                } else if (user.getAuthToken().equals(command.getAuthToken())){
+
+                    log.info("Successful logout for user={}", user.getId());
+
+                    user.setAuthToken("0");
+                    user =userRepository.save(user);
+                    return ResponseEntity.badRequest().body(buildAlertResponse("Successful logout for user with ID= "+user.getId()));
+                } else {
+                return  ResponseEntity.badRequest().body(buildAlertResponse("unauthenticated_user"));
+            }
+            }
+    }
+
 
     public ResponseEntity<Object> getUserById(String id){
         log.debug("About to process [{}]", id);
