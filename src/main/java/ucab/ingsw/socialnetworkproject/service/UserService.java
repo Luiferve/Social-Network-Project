@@ -6,12 +6,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import ucab.ingsw.socialnetworkproject.command.UserLogoutCommand;
 import ucab.ingsw.socialnetworkproject.response.AlertResponse;
-import ucab.ingsw.socialnetworkproject.response.UserNormalResponse;
+import ucab.ingsw.socialnetworkproject.response.UserLogInResponse;
 import ucab.ingsw.socialnetworkproject.command.UserSingUpCommand;
 import ucab.ingsw.socialnetworkproject.command.UserLoginCommand;
 import ucab.ingsw.socialnetworkproject.command.UserUpdateCommand;
 import ucab.ingsw.socialnetworkproject.model.User;
 import ucab.ingsw.socialnetworkproject.repository.UserRepository;
+import ucab.ingsw.socialnetworkproject.response.UserNormalResponse;
 import ucab.ingsw.socialnetworkproject.response.UserProfileResponse;
 
 import java.math.BigInteger;
@@ -127,7 +128,7 @@ public class UserService {
                     return ResponseEntity.badRequest().body(buildAlertResponse("El email ya se encuentra registrado en el sistema."));
                 } else {    //se actualiza la informacion del usuario
                     User user = buildExistingUser(command, id);
-                    if(command.getAuthToken().equals(userRepository.findByEmail(command.getEmail()).getAuthToken())){
+                    if(command.getAuthToken().equals(userRepository.findById(Long.parseLong(id)).get().getAuthToken())){
                        user = userRepository.save(user);
 
                        log.info("Updated user with ID={}", user.getId());
@@ -158,18 +159,20 @@ public class UserService {
                 if (user.getAuthToken().equals("0")){ //si no tiene authorization token se permite el log in
                     log.info("Successful login for user={}", user.getId());
 
-                    UserNormalResponse userNormalResponse = new UserNormalResponse();
-                    userNormalResponse.setFirstName(user.getFirstName());
-                    userNormalResponse.setLastName(user.getLastName());
-                    userNormalResponse.setEmail(user.getEmail());
-                    userNormalResponse.setId(user.getId());
-                    userNormalResponse.setDateOfBirth(user.getDateOfBirth());
+                    UserLogInResponse userLogInResponse = new UserLogInResponse();
+                    userLogInResponse.setFirstName(user.getFirstName());
+                    userLogInResponse.setLastName(user.getLastName());
+                    userLogInResponse.setEmail(user.getEmail());
+                    userLogInResponse.setId(user.getId());
+                    userLogInResponse.setDateOfBirth(user.getDateOfBirth());
                     String token=getMD5(user.getEmail())+"."+getMD5(Long.toString(System.currentTimeMillis()));
                     user.setAuthToken(token);
                     user =userRepository.save(user);
-                    userNormalResponse.setAuthToken(user.getAuthToken());
-                    return ResponseEntity.ok(userNormalResponse);
+                    userLogInResponse.setAuthToken(user.getAuthToken());
+                    return ResponseEntity.ok(userLogInResponse);
                 } else {
+                    log.info("User ={} already logged in ", user.getId());
+
                     return  ResponseEntity.badRequest().body(buildAlertResponse("already_logged_in"));
                 }
             }
