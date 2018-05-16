@@ -24,4 +24,6 @@ public class UserLoginCommand implements Serializable {
     @NotEmpty(message = "Se requiere contraseña.")
     @Size(min = validationRules.PASSWORD_MIN_SIZE, message = "La contraseña debe contener al menos 6 caracteres.")
     private String password;
+
+
 }
