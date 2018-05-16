@@ -13,7 +13,7 @@ import ucab.ingsw.socialnetworkproject.model.User;
 import ucab.ingsw.socialnetworkproject.repository.UserRepository;
 import ucab.ingsw.socialnetworkproject.response.UserProfileResponse;
 
-import javax.validation.constraints.Digits;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
