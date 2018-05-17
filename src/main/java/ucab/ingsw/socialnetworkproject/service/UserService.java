@@ -20,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Base64;
 
 @Slf4j
 
@@ -39,6 +40,16 @@ public class UserService {
             System.out.println("ERROR");
         }
         return null;
+    }
+
+    private String encrypt(String text){ //encripta string usando base64
+        byte[] textBytes=text.getBytes();
+        return Base64.getEncoder().encodeToString(textBytes);
+    }
+
+    private String decrypt(String text){ //decripta string usando base64
+        byte[] decoded = Base64.getDecoder().decode(text);
+        return new String(decoded);
     }
 
     private User buildNewUser(UserSingUpCommand command) { //crea un usuarion nuevo con los atributos recibidos por comando
