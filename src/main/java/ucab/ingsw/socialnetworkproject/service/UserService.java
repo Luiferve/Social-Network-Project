@@ -57,7 +57,7 @@ public class UserService {
         user.setId(System.currentTimeMillis());
         user.setFirstName(command.getFirstName());
         user.setLastName(command.getLastName());
-        user.setEmail(command.getEmail());
+        user.setEmail(command.getEmail().toLowerCase());
         user.setPassword(command.getPassword());
         user.setDateOfBirth(command.getDateOfBirth());
         user.setAuthToken("0");
@@ -70,7 +70,7 @@ public class UserService {
         user.setId(Long.parseLong(id));
         user.setFirstName(command.getFirstName());
         user.setLastName(command.getLastName());
-        user.setEmail(command.getEmail());
+        user.setEmail(command.getEmail().toLowerCase());
         user.setPassword(command.getPassword());
         user.setDateOfBirth(command.getDateOfBirth());
         user.setAuthToken(command.getAuthToken());
@@ -102,7 +102,7 @@ public class UserService {
         log.debug("About to process [{}]", command);
 
         if(userRepository.existsByEmail(command.getEmail())){ // se revisa si el email ya existe en la base de datos
-            log.info("email {} already registered", command.getEmail());
+            log.info("email {} already registered", command.getEmail().toLowerCase());
 
             return ResponseEntity.badRequest().body(buildAlertResponse("El usuario ya se encuentra registrado en el sistema."));
         }
@@ -132,9 +132,9 @@ public class UserService {
                 return ResponseEntity.badRequest().body(buildAlertResponse("invalid_Id"));
             } else {
                 String emailOriginal = userRepository.findById(Long.parseLong(id)).get().getEmail();
-                String emailNuevo = command.getEmail();
+                String emailNuevo = command.getEmail().toLowerCase();
                 if ((userRepository.existsByEmail(emailNuevo)) && !(emailNuevo.equals(emailOriginal))) { // se revisa si el email ya existe en la base de datos
-                    log.info("email {} already registered", command.getEmail());
+                    log.info("email {} already registered", command.getEmail().toLowerCase());
 
                     return ResponseEntity.badRequest().body(buildAlertResponse("El email ya se encuentra registrado en el sistema."));
                 } else {    //se actualiza la informacion del usuario
@@ -159,9 +159,9 @@ public class UserService {
 
     public ResponseEntity<Object> loginAuthenticator(UserLoginCommand command) {
         log.debug("About to process [{}]", command);
-        User user = userRepository.findByEmail(command.getEmail());  //se verifica si existe el email recibido por comando
+        User user = userRepository.findByEmail(command.getEmail().toLowerCase());  //se verifica si existe el email recibido por comando
         if(user == null){
-            log.info("Cannot find user with email={}", command.getEmail());
+            log.info("Cannot find user with email={}", command.getEmail().toLowerCase());
 
             return  ResponseEntity.badRequest().body(buildAlertResponse("invalid_mail"));
         }
@@ -204,9 +204,9 @@ public class UserService {
 
     public ResponseEntity<Object> logOut (UserLogoutCommand command){
         log.debug("About to process [{}]", command);
-        User user = userRepository.findByEmail(command.getEmail());  //se verifica si existe el email recibido por comando
+        User user = userRepository.findByEmail(command.getEmail().toLowerCase());  //se verifica si existe el email recibido por comando
         if(user == null){
-            log.info("Cannot find user with email={}", command.getEmail());
+            log.info("Cannot find user with email={}", command.getEmail().toLowerCase());
 
             return  ResponseEntity.badRequest().body(buildAlertResponse("invalid_mail"));
         }
