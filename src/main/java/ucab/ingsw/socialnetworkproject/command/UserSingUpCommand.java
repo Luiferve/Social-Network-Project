@@ -32,12 +32,12 @@ public class UserSingUpCommand implements Serializable {
 
     @NotNull(message = "Se requiere contraseña.")
     @NotEmpty(message = "Se requiere contraseña.")
-    @Size(min = validationRules.PASSWORD_MIN_SIZE, message = "La contraseña debe contener al menos 6 caracteres.")
+    //@Size(min = validationRules.PASSWORD_MIN_SIZE, message = "La contraseña debe contener al menos 6 caracteres.")
     private String password;
 
     @NotNull(message = "Se requiere contraseña de conformacion.")
     @NotEmpty(message = "Se requiere contraseña de confrimacion.")
-    @Size(min = validationRules.PASSWORD_MIN_SIZE, message = "La contraseña de confirmacion debe contener al menos 6 caracteres.")
+    //@Size(min = validationRules.PASSWORD_MIN_SIZE, message = "La contraseña de confirmacion debe contener al menos 6 caracteres.")
     private String confirmationPassword;
 
     @NotNull(message = "Se requiere fecha de nacimiento.")

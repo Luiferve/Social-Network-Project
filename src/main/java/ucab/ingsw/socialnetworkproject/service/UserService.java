@@ -58,7 +58,7 @@ public class UserService {
         user.setFirstName(command.getFirstName());
         user.setLastName(command.getLastName());
         user.setEmail(command.getEmail().toLowerCase());
-        user.setPassword(command.getPassword());
+        user.setPassword(decrypt(command.getPassword()));
         user.setDateOfBirth(command.getDateOfBirth());
         user.setAuthToken("0");
 
@@ -101,25 +101,31 @@ public class UserService {
     public ResponseEntity<Object> registerUser(UserSingUpCommand command) { //registro de usuarios
         log.debug("About to process [{}]", command);
 
-        if(userRepository.existsByEmail(command.getEmail())){ // se revisa si el email ya existe en la base de datos
+        if(userRepository.existsByEmail(command.getEmail().toLowerCase())){ // se revisa si el email ya existe en la base de datos
             log.info("email {} already registered", command.getEmail().toLowerCase());
 
             return ResponseEntity.badRequest().body(buildAlertResponse("El usuario ya se encuentra registrado en el sistema."));
         }
         else {
-            if(!command.getPassword().equals(command.getConfirmationPassword())) { //se compara la contrasena con la contrasena de confirmacion
-                log.info("Mismatching passwords.");
-                return ResponseEntity.badRequest().body(buildAlertResponse("Las contraseñas no coinciden"));
+            if (decrypt(command.getPassword()).length()>=6){
+                if(!command.getPassword().equals(command.getConfirmationPassword())) { //se compara la contrasena con la contrasena de confirmacion
+                    log.info("Mismatching passwords.");
+                    return ResponseEntity.badRequest().body(buildAlertResponse("Las contraseñas no coinciden"));
+                }
+
+                else { // si el email no existe y las contrasenas coinciden se agrega el usuario a la base de datos
+                    User user = buildNewUser(command);
+                    user = userRepository.save(user);
+
+                    log.info("Registered user with ID={}", user.getId());
+
+                    return ResponseEntity.ok().body(buildAlertResponse("Operación Exitosa."));
+                }
+            }
+            else{
+                return  ResponseEntity.badRequest().body(buildAlertResponse("invalid_password_size"));
             }
 
-            else { // si el email no existe y las contrasenas coinciden se agrega el usuario a la base de datos
-                User user = buildNewUser(command);
-                user = userRepository.save(user);
-
-                log.info("Registered user with ID={}", user.getId());
-
-                return ResponseEntity.ok().body(buildAlertResponse("Operación Exitosa."));
-            }
         }
     }
 
