@@ -1,4 +1,6 @@
-                    Registro de Usuario:
+*******TODAS LAS CONTRASEÑAS SERAN ENCRIPTADAS Y DESENCRIPTADAS USANDO EL ALGORITMO BASE64********
+++++ EL FORMATO DE LA FECHA DEBE SER YYYY/MM/DD, UN FALLO DE ESTA PATRON DARA UN ERROR DE VALIDACION++++
+                   Registro de Usuario:
 
 URL: https://ignsw201825-snproject.herokuapp.com/user/register
 
