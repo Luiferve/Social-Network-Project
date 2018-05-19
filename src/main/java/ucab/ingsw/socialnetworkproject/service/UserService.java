@@ -71,7 +71,7 @@ public class UserService {
         user.setFirstName(command.getFirstName());
         user.setLastName(command.getLastName());
         user.setEmail(command.getEmail().toLowerCase());
-        user.setPassword(command.getPassword());
+        user.setPassword(decrypt(command.getPassword()));
         user.setDateOfBirth(command.getDateOfBirth());
         user.setAuthToken(command.getAuthToken());
 
@@ -137,23 +137,29 @@ public class UserService {
 
                 return ResponseEntity.badRequest().body(buildAlertResponse("invalid_Id"));
             } else {
-                String emailOriginal = userRepository.findById(Long.parseLong(id)).get().getEmail();
+                String emailOriginal = userRepository.findById(Long.parseLong(id)).get().getEmail().toLowerCase();
                 String emailNuevo = command.getEmail().toLowerCase();
                 if ((userRepository.existsByEmail(emailNuevo)) && !(emailNuevo.equals(emailOriginal))) { // se revisa si el email ya existe en la base de datos
                     log.info("email {} already registered", command.getEmail().toLowerCase());
 
                     return ResponseEntity.badRequest().body(buildAlertResponse("El email ya se encuentra registrado en el sistema."));
                 } else {    //se actualiza la informacion del usuario
-                    User user = buildExistingUser(command, id);
-                    if(command.getAuthToken().equals(userRepository.findById(Long.parseLong(id)).get().getAuthToken())){
-                       user = userRepository.save(user);
+                    if (decrypt(command.getPassword()).length()>=6){
+                        User user = buildExistingUser(command, id);
+                        if(command.getAuthToken().equals(userRepository.findById(Long.parseLong(id)).get().getAuthToken())){  //revisa que el usuario este iniciado
+                            user = userRepository.save(user);
 
-                       log.info("Updated user with ID={}", user.getId());
+                            log.info("Updated user with ID={}", user.getId());
 
-                      return ResponseEntity.ok().body(buildAlertResponse("Operación Exitosa."));
-                    }else{
-                      return ResponseEntity.badRequest().body(buildAlertResponse("unauthenticated_user"));
+                            return ResponseEntity.ok().body(buildAlertResponse("Operación Exitosa."));
+                        }else{
+                            return ResponseEntity.badRequest().body(buildAlertResponse("unauthenticated_user"));
+                        }
                     }
+                    else{
+                        return ResponseEntity.ok().body(buildAlertResponse("invalid_password_size"));
+                    }
+
                 }
             }
         } catch(NumberFormatException e){
