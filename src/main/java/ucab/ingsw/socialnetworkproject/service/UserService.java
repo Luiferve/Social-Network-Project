@@ -166,32 +166,38 @@ public class UserService {
             return  ResponseEntity.badRequest().body(buildAlertResponse("invalid_mail"));
         }
         else{
-            if(user.getPassword().equals(command.getPassword())) { //si las contrasenas coinciden se envia la informacion del usuario
-                if (user.getAuthToken().equals("0")){ //si no tiene authorization token se permite el log in
-                    log.info("Successful login for user={}", user.getId());
+            if (decrypt(command.getPassword()).length()>=6){
+                if(user.getPassword().equals(decrypt(command.getPassword()))) { //si las contrasenas coinciden se envia la informacion del usuario
+                    if (user.getAuthToken().equals("0")){ //si no tiene authorization token se permite el log in
+                        log.info("Successful login for user={}", user.getId());
 
-                    UserLogInResponse userLogInResponse = new UserLogInResponse();
-                    userLogInResponse.setFirstName(user.getFirstName());
-                    userLogInResponse.setLastName(user.getLastName());
-                    userLogInResponse.setEmail(user.getEmail());
-                    userLogInResponse.setId(user.getId());
-                    userLogInResponse.setDateOfBirth(user.getDateOfBirth());
-                    String token=getMD5(user.getEmail())+"."+getMD5(Long.toString(System.currentTimeMillis()));
-                    user.setAuthToken(token);
-                    user =userRepository.save(user);
-                    userLogInResponse.setAuthToken(user.getAuthToken());
-                    return ResponseEntity.ok(userLogInResponse);
-                } else {
-                    log.info("User ={} already logged in ", user.getId());
+                        UserLogInResponse userLogInResponse = new UserLogInResponse();
+                        userLogInResponse.setFirstName(user.getFirstName());
+                        userLogInResponse.setLastName(user.getLastName());
+                        userLogInResponse.setEmail(user.getEmail());
+                        userLogInResponse.setId(user.getId());
+                        userLogInResponse.setDateOfBirth(user.getDateOfBirth());
+                        String token=getMD5(user.getEmail())+"."+getMD5(Long.toString(System.currentTimeMillis()));
+                        user.setAuthToken(token);
+                        user =userRepository.save(user);
+                        userLogInResponse.setAuthToken(user.getAuthToken());
+                        return ResponseEntity.ok(userLogInResponse);
+                    } else {
+                        log.info("User ={} already logged in ", user.getId());
 
-                    return  ResponseEntity.badRequest().body(buildAlertResponse("already_logged_in"));
+                        return  ResponseEntity.badRequest().body(buildAlertResponse("already_logged_in"));
+                    }
+                }
+                else{
+                    log.info("{} is not valid password for user {}", command.getPassword(), user.getId());
+
+                    return  ResponseEntity.badRequest().body(buildAlertResponse("invalid_pass"));
                 }
             }
             else{
-                log.info("{} is not valid password for user {}", command.getPassword(), user.getId());
-
-                return  ResponseEntity.badRequest().body(buildAlertResponse("invalid_pass"));
+                return  ResponseEntity.badRequest().body(buildAlertResponse("invalid_password_size"));
             }
+
         }
 
     }
