@@ -11,11 +11,14 @@ import javax.validation.constraints.*;
 @Data
 public class UserUpdateCommand implements Serializable{
 
-
+    @NotNull(message = "Se requiere un primer nombre.")
+    @NotEmpty(message = "Se requiere un primer nombre.")
     @Size(max = validationRules.FIRST_LAST_NAME_MAX_SIZE, message = "El nombre no puede contener mas de 50 caracteres.")
     @Pattern(regexp = validationRules.FIRST_LAST_NAME_REGEX, message = "El nombre posee caracteres invalidos.")
     private String firstName;
 
+    @NotNull(message = "Se requiere un apellido.")
+    @NotEmpty(message = "Se requiere un apellido.")
     @Size(max = validationRules.FIRST_LAST_NAME_MAX_SIZE, message = "El apellido no puede contener mas de 50 caracteres.")
     @Pattern(regexp = validationRules.FIRST_LAST_NAME_REGEX, message = "El apellido posee caracteres invalidos.")
     private String lastName;
@@ -34,5 +37,9 @@ public class UserUpdateCommand implements Serializable{
     @NotNull(message = "Se requiere fecha de nacimiento.")
     @NotEmpty(message = "Se requiere fecha de nacimiento.")
     private String dateOfBirth;
+
+    @NotNull(message = "Se requiere un token de autorizacion.")
+    @NotEmpty(message = "Se requiere un token de autorizacion.")
+    private String authToken;
 
 }
