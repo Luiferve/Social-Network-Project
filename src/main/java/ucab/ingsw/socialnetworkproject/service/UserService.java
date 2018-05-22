@@ -84,7 +84,7 @@ public class UserService {
         }
     }
 
-    private User buildNewUser(UserSingUpCommand command) { //crea un usuarion nuevo con los atributos recibidos por comando
+    private User buildNewUser(UserSingUpCommand command) { //crea un usuario nuevo con los atributos recibidos por comando
         User user = new User();
         user.setId(System.currentTimeMillis());
         user.setFirstName(command.getFirstName());
@@ -139,7 +139,7 @@ public class UserService {
             return ResponseEntity.badRequest().body(buildAlertResponse("El usuario ya se encuentra registrado en el sistema."));
         }
         else {
-            if (decrypt(command.getPassword()).length()>=6){
+            if (decrypt(command.getPassword()).length()>=6){ // se valida el tamaño de la contraseña
                 if(!command.getPassword().equals(command.getConfirmationPassword())) { //se compara la contrasena con la contrasena de confirmacion
                     log.info("Mismatching passwords.");
                     return ResponseEntity.badRequest().body(buildAlertResponse("Las contraseñas no coinciden"));
@@ -184,8 +184,8 @@ public class UserService {
 
                     return ResponseEntity.badRequest().body(buildAlertResponse("El email ya se encuentra registrado en el sistema."));
                 } else {    //se actualiza la informacion del usuario
-                    if (decrypt(command.getPassword()).length()>=6){
-                        if (validDate(command.getDateOfBirth())){
+                    if (decrypt(command.getPassword()).length()>=6){ // se valida el tamaño de la contraseña
+                        if (validDate(command.getDateOfBirth())){ // se valida la fecha
                             User user = buildExistingUser(command, id);
                             if(command.getAuthToken().equals(userRepository.findById(Long.parseLong(id)).get().getAuthToken())){  //revisa que el usuario este iniciado
                                 user = userRepository.save(user);
