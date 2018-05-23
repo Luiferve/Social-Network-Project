@@ -90,7 +90,7 @@ public class UserService {
         user.setFirstName(command.getFirstName());
         user.setLastName(command.getLastName());
         user.setEmail(command.getEmail());
-        user.setPassword(decrypt(command.getPassword()));
+        user.setPassword(command.getPassword());
         user.setDateOfBirth(command.getDateOfBirth());
         user.setAuthToken("0");
 
@@ -103,7 +103,7 @@ public class UserService {
         user.setFirstName(command.getFirstName());
         user.setLastName(command.getLastName());
         user.setEmail(command.getEmail().toLowerCase());
-        user.setPassword(decrypt(command.getPassword()));
+        user.setPassword(command.getPassword());
         user.setDateOfBirth(command.getDateOfBirth());
         user.setAuthToken(command.getAuthToken());
 
@@ -225,8 +225,8 @@ public class UserService {
             return  ResponseEntity.badRequest().body(buildAlertResponse("invalid_mail"));
         }
         else{
-            if (decrypt(command.getPassword()).length()>=6){
-                if(user.getPassword().equals(decrypt(command.getPassword()))) { //si las contrasenas coinciden se envia la informacion del usuario
+            if (decrypt(command.getPassword()).length()>=6){ //verifica el tamaño de la contraseña
+                if(user.getPassword().equals(command.getPassword())) { //si las contrasenas coinciden se envia la informacion del usuario
                     if (user.getAuthToken().equals("0")){ //si no tiene authorization token se permite el log in
                         log.info("Successful login for user={}", user.getId());
 
@@ -248,7 +248,7 @@ public class UserService {
                     }
                 }
                 else{
-                    log.info("{} is not valid password for user {}", command.getPassword(), user.getId());
+                    log.info("{} is not valid password for user {}", decrypt(command.getPassword()), user.getId());
 
                     return  ResponseEntity.badRequest().body(buildAlertResponse("invalid_pass"));
                 }
@@ -301,7 +301,7 @@ public class UserService {
             userProfileResponse.setFirstName(user.getFirstName());
             userProfileResponse.setLastName(user.getLastName());
             userProfileResponse.setEmail(user.getEmail());
-            userProfileResponse.setPassword(encrypt(user.getPassword()));
+            userProfileResponse.setPassword(user.getPassword());
             userProfileResponse.setDateOfBirth(user.getDateOfBirth());
 
             log.info("Returning info for user with ID={}", id);
