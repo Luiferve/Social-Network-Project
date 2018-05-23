@@ -11,17 +11,10 @@ import java.time.LocalDate;
 
 @Data
 @ToString
-public class User  implements Serializable {
-    @Id
-    private long id;
+public class Media  implements Serializable {
+    
+    private String url;
 
-    private String firstName;
-    private String lastName;
-    private String email;
-    private String password;
-    private String dateOfBirth;
-    private String authToken;
-
-    private Album[] albums;
-    private long[] friends;
+    private long album_id;
+    private int type; //0=instagram 1=youtube 2=soundcloud
 }

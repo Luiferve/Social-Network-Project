@@ -5,23 +5,19 @@ import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.TextIndexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import ucab.ingsw.socialnetworkproject.model.Media;
 
 import java.io.Serializable;
 import java.time.LocalDate;
 
 @Data
 @ToString
-public class User  implements Serializable {
+public class Album  implements Serializable {
     @Id
-    private long id;
+    private long album_id;
 
-    private String firstName;
-    private String lastName;
-    private String email;
-    private String password;
-    private String dateOfBirth;
-    private String authToken;
-
-    private Album[] albums;
-    private long[] friends;
+    private long user_id;
+    private String name;
+    private String description;
+    private Media[] links;
 }
