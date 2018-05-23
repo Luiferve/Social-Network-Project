@@ -106,8 +106,8 @@ public class UserService {
         user.setPassword(command.getPassword());
         user.setDateOfBirth(command.getDateOfBirth());
         user.setAuthToken(command.getAuthToken());
-        user.setFriends(command.getFriends());
-        user.setAlbums(command.getAlbums());
+        //user.setFriends(command.getFriends());
+        //user.setAlbums(command.getAlbums());
 
         return user;
     }
