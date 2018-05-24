@@ -135,7 +135,7 @@ public class UserService {
     public ResponseEntity<Object> registerUser(UserSingUpCommand command) { //registro de usuarios
         log.debug("About to process [{}]", command);
 
-        if(userRepository.existsByEmail(command.getEmail())){ // se revisa si el email ya existe en la base de datos
+        if(userRepository.existsByEmailIgnore(command.getEmail())){ // se revisa si el email ya existe en la base de datos
             log.info("email {} already registered", command.getEmail());
 
             return ResponseEntity.badRequest().body(buildAlertResponse("El usuario ya se encuentra registrado en el sistema."));
@@ -181,7 +181,7 @@ public class UserService {
             } else {
                 String emailOriginal = userRepository.findById(Long.parseLong(id)).get().getEmail();
                 String emailNuevo = command.getEmail();
-                if ((userRepository.existsByEmail(emailNuevo)) && !(emailNuevo.equals(emailOriginal))) { // se revisa si el email ya existe en la base de datos
+                if ((userRepository.existsByEmailIgnoreCase(emailNuevo)) && !(emailNuevo.equals(emailOriginal))) { // se revisa si el email ya existe en la base de datos
                     log.info("email {} already registered", command.getEmail());
 
                     return ResponseEntity.badRequest().body(buildAlertResponse("El email ya se encuentra registrado en el sistema."));
@@ -220,7 +220,7 @@ public class UserService {
 
     public ResponseEntity<Object> loginAuthenticator(UserLoginCommand command) {
         log.debug("About to process [{}]", command);
-        User user = userRepository.findByEmail(command.getEmail());  //se verifica si existe el email recibido por comando
+        User user = userRepository.findByEmailIgnoreCase(command.getEmail());  //se verifica si existe el email recibido por comando
         if(user == null){
             log.info("Cannot find user with email={}", command.getEmail());
 
@@ -265,7 +265,7 @@ public class UserService {
 
     public ResponseEntity<Object> logOut (UserLogoutCommand command){
         log.debug("About to process [{}]", command);
-        User user = userRepository.findByEmail(command.getEmail());  //se verifica si existe el email recibido por comando
+        User user = userRepository.findByEmailIgnoreCase(command.getEmail());  //se verifica si existe el email recibido por comando
         if(user == null){
             log.info("Cannot find user with email={}", command.getEmail());
 
