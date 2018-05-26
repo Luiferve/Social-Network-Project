@@ -135,7 +135,7 @@ public class UserService {
     public ResponseEntity<Object> registerUser(UserSingUpCommand command) { //registro de usuarios
         log.debug("About to process [{}]", command);
 
-        if(userRepository.existsByEmailIgnore(command.getEmail())){ // se revisa si el email ya existe en la base de datos
+        if(userRepository.existsByEmailIgnoreCase(command.getEmail())){ // se revisa si el email ya existe en la base de datos
             log.info("email {} already registered", command.getEmail());
 
             return ResponseEntity.badRequest().body(buildAlertResponse("El usuario ya se encuentra registrado en el sistema."));
