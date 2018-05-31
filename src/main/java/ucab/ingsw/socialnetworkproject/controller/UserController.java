@@ -38,8 +38,13 @@ public class UserController {
     }
 
     @RequestMapping(value = "/friend", consumes = "application/json", method = RequestMethod.POST)
-    public ResponseEntity friend(@Valid @RequestBody UserFriendCommand command) {
+    public ResponseEntity addFriend(@Valid @RequestBody UserFriendCommand command) {
         return userService.addFriend(command);
+    }
+
+    @RequestMapping(value = "/friend", consumes = "application/json", method = RequestMethod.DELETE)
+    public ResponseEntity removeFriend(@Valid @RequestBody UserFriendCommand command) {
+        return userService.removeFriend(command);
     }
 
     @RequestMapping(value = "/update/{id}", consumes = "application/json", method = RequestMethod.PUT)
