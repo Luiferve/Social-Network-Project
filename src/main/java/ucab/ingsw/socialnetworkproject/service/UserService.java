@@ -109,8 +109,6 @@ public class UserService {
         user.setDateOfBirth(command.getDateOfBirth());
         user.setAuthToken("0");
 
-        user.setFriends(null);
-
         return user;
     }
 
