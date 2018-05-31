@@ -23,5 +23,5 @@ public class User  implements Serializable {
     private String authToken;
 
     //private Album[] albums;
-    //private long[] friends;
+    private long[] friends;
 }

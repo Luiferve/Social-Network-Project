@@ -13,4 +13,5 @@ public class UserProfileResponse {
     private String email;
     private String password;
     private String dateOfBirth;
+    private long [] friends;
 }

@@ -5,10 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ucab.ingsw.socialnetworkproject.command.UserLogoutCommand;
-import ucab.ingsw.socialnetworkproject.command.UserSingUpCommand;
-import ucab.ingsw.socialnetworkproject.command.UserLoginCommand;
-import ucab.ingsw.socialnetworkproject.command.UserUpdateCommand;
+import ucab.ingsw.socialnetworkproject.command.*;
 import ucab.ingsw.socialnetworkproject.service.UserService;
 
 import javax.validation.Valid;
@@ -38,6 +35,11 @@ public class UserController {
     @RequestMapping(value = "/logout", consumes = "application/json", method = RequestMethod.POST)
     public ResponseEntity logout(@Valid @RequestBody UserLogoutCommand command) {
         return userService.logOut(command);
+    }
+
+    @RequestMapping(value = "/friend", consumes = "application/json", method = RequestMethod.POST)
+    public ResponseEntity friend(@Valid @RequestBody UserFriendCommand command) {
+        return userService.addFriend(command);
     }
 
     @RequestMapping(value = "/update/{id}", consumes = "application/json", method = RequestMethod.PUT)
