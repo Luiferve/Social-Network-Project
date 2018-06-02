@@ -14,7 +14,7 @@ import java.time.LocalDate;
 @ToString
 public class Album  implements Serializable {
     @Id
-    private long album_id;
+    private long id;
 
     private long user_id;
     private String name;

@@ -93,15 +93,16 @@ public class UserService {
     }
 
     public boolean existsInArray(long[] array,long id){
+        if (array==null) return false;
         for (int i=0;i<array.length;i++){
             if (array[i]==id) return true;
         }
         return false;
     }
 
-    public long[] removeItem(long[]array,long id){
-        long[] newArray =new long[array.length-1];
+    private long[] removeItem(long[]array,long id){
         if(array==null) return null;
+        long[] newArray =new long[array.length-1];
         int j=0;
         for (int i=0;i<array.length;i++){
             if (array[i]!=id){
@@ -109,6 +110,16 @@ public class UserService {
                 j++;
             }
         }
+        return newArray;
+    }
+
+    private long[] addItem(long[] array,long id){
+        if (array==null) return new long[]{id};
+        long[] newArray=new long[array.length+1];
+        for (int i=0;i<array.length;i++){
+            newArray[i]=array[i];
+        }
+        newArray[newArray.length-1]=id;
         return newArray;
     }
 
