@@ -162,8 +162,7 @@ public class UserService {
     private User searchUserById(String id) {  //Busqueda de usuario por id proporcionado
         try {
             if(userRepository.findById(Long.parseLong(id)).isPresent()){ //se verifica que exista dicho id en la base de datos
-                User user = userRepository.findById(Long.parseLong(id)).get();
-                return user;
+                return userRepository.findById(Long.parseLong(id)).get();
             }
             else
                 return null;
@@ -219,7 +218,8 @@ public class UserService {
 
                 return ResponseEntity.badRequest().body(buildAlertResponse("invalid_Id"));
             } else {
-                String emailOriginal = userRepository.findById(Long.parseLong(id)).get().getEmail();
+                User oldUser=userRepository.findById(Long.parseLong(id)).get();
+                String emailOriginal = oldUser.getEmail();
                 String emailNuevo = command.getEmail();
                 if ((userRepository.existsByEmailIgnoreCase(emailNuevo)) && !(emailNuevo.equals(emailOriginal))) { // se revisa si el email ya existe en la base de datos
                     log.info("email {} already registered", command.getEmail());
@@ -228,9 +228,8 @@ public class UserService {
                 } else {    //se actualiza la informacion del usuario
                     if (decrypt(command.getPassword()).length()>=6){ // se valida el tamaño de la contraseña
                         if (validDate(command.getDateOfBirth())){ // se valida la fecha
-                            User user = buildExistingUser(command, id);
-                            if(command.getAuthToken().equals(userRepository.findById(Long.parseLong(id)).get().getAuthToken())){  //revisa que el usuario este iniciado
-                                User oldUser=userRepository.findByEmailIgnoreCase(command.getEmail());
+                            if(command.getAuthToken().equals(oldUser.getAuthToken())){  //revisa que el usuario este iniciado
+                                User user = buildExistingUser(command, id);
                                 user.setFriends(oldUser.getFriends());
                                 user = userRepository.save(user);
 
@@ -238,7 +237,10 @@ public class UserService {
 
                                 return ResponseEntity.ok().body(buildAlertResponse("Operación Exitosa."));
                             }else{
+                                log.error("User with ID={} is not unauthenticated", id);
+
                                 return ResponseEntity.badRequest().body(buildAlertResponse("unauthenticated_user"));
+
                             }
                         }
                         else{
@@ -248,6 +250,7 @@ public class UserService {
 
                     }
                     else{
+                        log.error("Invalid password");
                         return ResponseEntity.ok().body(buildAlertResponse("invalid_password_size"));
                     }
 
