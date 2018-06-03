@@ -71,10 +71,10 @@ public class AlbumService {
 
             return ResponseEntity.badRequest().body(buildAlertResponse("invalid_user_Id."));
         }
-        else if(!(command.getAuthToken().equals(user.getAuthToken()))) {
+        else if((!(command.getAuthToken().equals(user.getAuthToken()))) || (command.getAuthToken().equals("0"))) {
             log.error("Wrong authentication token");
 
-            return ResponseEntity.badRequest().body(buildAlertResponse("wrong_authentication_Id."));
+            return ResponseEntity.badRequest().body(buildAlertResponse("unauthenticated_user."));
         }
         else{
             List<UserAlbumResponse> albumList = createAlbumList(user);
@@ -109,10 +109,10 @@ public class AlbumService {
 
             return ResponseEntity.badRequest().body(buildAlertResponse("invalid_user_Id."));
         }
-        else if(!(command.getAuthToken().equals(user.getAuthToken()))) {
+        else if((!(command.getAuthToken().equals(user.getAuthToken()))) || (command.getAuthToken().equals("0"))) {
             log.error("Wrong authentication token");
 
-            return ResponseEntity.badRequest().body(buildAlertResponse("wrong_authentication_Id."));
+            return ResponseEntity.badRequest().body(buildAlertResponse("unauthenticated_user."));
         }
         else if(!(albumRepository.existsById(Long.parseLong(command.getAlbumId())))){
             log.info("Cannot find album with id={}", command.getAlbumId());
@@ -140,7 +140,7 @@ public class AlbumService {
         }
     }
 
-    public ResponseEntity getAlbumList(String id){
+    public ResponseEntity<Object> getAlbumList(String id){
         User user = userService.searchUserById(id);
         if(user == null){
             log.info("Cannot find user with id={}", id);
@@ -152,7 +152,7 @@ public class AlbumService {
             if(albumList.isEmpty()){
                 log.info("User ={} album list is empty", id);
 
-                return ResponseEntity.badRequest().body(buildAlertResponse("empty_album_list"));
+                return ResponseEntity.ok().body(buildAlertResponse("empty_album_list"));
             }
             else {
                 log.info("Returning album list for user id={}", id);
@@ -160,4 +160,5 @@ public class AlbumService {
             }
         }
     }
+
 }
