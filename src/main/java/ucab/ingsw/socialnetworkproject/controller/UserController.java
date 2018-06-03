@@ -47,6 +47,11 @@ public class UserController {
         return userService.removeFriend(command);
     }
 
+    @RequestMapping(value = "/friend/getList/{id}", method = RequestMethod.GET)
+    public ResponseEntity getUserList(@PathVariable("id") String id) {
+        return userService.getFriendList(id);
+    }
+
     @RequestMapping(value = "/update/{id}", consumes = "application/json", method = RequestMethod.PUT)
     public ResponseEntity update(@Valid @RequestBody UserUpdateCommand command, @PathVariable("id") String id) {
         return userService.updateUser(command, id);
