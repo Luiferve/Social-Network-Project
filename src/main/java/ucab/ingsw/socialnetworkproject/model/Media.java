@@ -12,9 +12,10 @@ import java.time.LocalDate;
 @Data
 @ToString
 public class Media  implements Serializable {
-    
-    private String url;
+    @Id
+    private long id;
 
-    private long album_id;
+    private String url;
+    private long albumId;
     private int type; //0=instagram 1=youtube 2=soundcloud
 }

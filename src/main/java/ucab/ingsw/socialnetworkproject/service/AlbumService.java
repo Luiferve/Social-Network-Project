@@ -9,6 +9,7 @@ import ucab.ingsw.socialnetworkproject.command.UserRemoveAlbumCommand;
 import ucab.ingsw.socialnetworkproject.model.Album;
 import ucab.ingsw.socialnetworkproject.model.User;
 import ucab.ingsw.socialnetworkproject.repository.AlbumRepository;
+import ucab.ingsw.socialnetworkproject.repository.MediaRepository;
 import ucab.ingsw.socialnetworkproject.repository.UserRepository;
 import ucab.ingsw.socialnetworkproject.response.AlertResponse;
 import ucab.ingsw.socialnetworkproject.response.UserAlbumResponse;
@@ -31,6 +32,9 @@ public class AlbumService {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private MediaRepository mediaRepository;
+
 
     private Album buildNewAlbum (UserNewAlbumCommand command){
         Album album =new Album();
@@ -48,6 +52,7 @@ public class AlbumService {
         return response;
     }
 
+
     public List<UserAlbumResponse> createAlbumList(User user){
         List<UserAlbumResponse> albumList = new ArrayList<>();
         List<Long> albumIdList = user.getAlbums();
@@ -57,7 +62,7 @@ public class AlbumService {
                 albumResponse.setId(it.getId());
                 albumResponse.setName(it.getName());
                 albumResponse.setDescription(it.getDescription());
-                albumResponse.setLinks(it.getLinks());
+                albumResponse.setMedia(it.getMedia());
                 albumList.add(albumResponse);
             }
         });
@@ -110,7 +115,7 @@ public class AlbumService {
             return ResponseEntity.badRequest().body(buildAlertResponse("invalid_user_Id."));
         }
         else if((!(command.getAuthToken().equals(user.getAuthToken()))) || (command.getAuthToken().equals("0"))) {
-            log.error("Wrong authentication token");
+            log.error("unauthenticated_user.");
 
             return ResponseEntity.badRequest().body(buildAlertResponse("unauthenticated_user."));
         }
@@ -125,6 +130,10 @@ public class AlbumService {
             return ResponseEntity.badRequest().body(buildAlertResponse("album_id_not_on_list"));
         }
         else{
+            Album album = albumRepository.findById(Long.parseLong(command.getAlbumId())).get();
+            album.getMedia().forEach(it->{
+                mediaRepository.deleteById(it);
+            });
             boolean result = user.getAlbums().remove(Long.parseLong(command.getAlbumId()));
             if(result){
                 log.info("Album ={} removed from user ={} album list", command.getAlbumId(), user.getId());

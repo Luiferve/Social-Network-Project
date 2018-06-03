@@ -7,7 +7,7 @@ import lombok.ToString;
 @Data
 @ToString
 public class UserNormalResponse {
-    private Long id;
+    private long id;
     private String firstName;
     private String lastName;
     private String email;

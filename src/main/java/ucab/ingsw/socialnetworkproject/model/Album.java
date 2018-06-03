@@ -16,10 +16,10 @@ import java.util.List;
 @ToString
 public class Album  implements Serializable {
     @Id
-    private long id;
+    private Long id;
 
-    private long user_id;
+    private Long user_id;
     private String name;
     private String description;
-    private List<Media> links = new ArrayList<>();
+    private List<Long> media = new ArrayList<>();
 }

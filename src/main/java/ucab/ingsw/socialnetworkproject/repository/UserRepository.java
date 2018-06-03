@@ -11,7 +11,6 @@ import java.util.Optional;
 
 @Repository("userRepository")
 public interface UserRepository extends CrudRepository<User, Long> {
-    List<User> findByFirstNameIgnoreCaseContaining(String name);
     User findByEmailIgnoreCase(String email);
     boolean  existsByEmailIgnoreCase(String email);
 }

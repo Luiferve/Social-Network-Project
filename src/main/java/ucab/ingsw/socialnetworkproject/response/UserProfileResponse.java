@@ -9,7 +9,7 @@ import java.util.List;
 @Data
 @ToString
 public class UserProfileResponse {
-    private Long id;
+    private long id;
     private String firstName;
     private String lastName;
     private String email;

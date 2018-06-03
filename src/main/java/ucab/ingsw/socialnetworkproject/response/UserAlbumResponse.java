@@ -13,5 +13,5 @@ public class UserAlbumResponse{
     private long id;
     private String name;
     private String description;
-    private List<Media> links;
+    private List<Long> Media;
 }
