@@ -16,4 +16,5 @@ public class UserProfileResponse {
     private String password;
     private String dateOfBirth;
     private List<Long> friends;
+    private List<Long> albums;
 }

@@ -128,6 +128,23 @@ public class UserService {
         }
     }
 
+    public List<UserNormalResponse> createFriendList(User user) {
+        List<UserNormalResponse> friendList = new ArrayList<>();
+        List<Long> friendIdList = user.getFriends();
+        userRepository.findAll().forEach(it->{
+            if(friendIdList.stream().anyMatch(item -> item == it.getId())){
+                UserNormalResponse normalResponse = new UserNormalResponse();
+                normalResponse.setId(it.getId());
+                normalResponse.setFirstName(it.getFirstName());
+                normalResponse.setLastName(it.getLastName());
+                normalResponse.setEmail(it.getEmail());
+                normalResponse.setDateOfBirth(it.getDateOfBirth());
+                friendList.add(normalResponse);
+            }
+        });
+        return friendList;
+    }
+
     public ResponseEntity<Object> registerUser(UserSingUpCommand command) { //registro de usuarios
         log.debug("About to process [{}]", command);
 
@@ -268,26 +285,29 @@ public class UserService {
 
     public ResponseEntity<Object> logOut (UserLogoutCommand command){
         log.debug("About to process [{}]", command);
-        User user = userRepository.findByEmailIgnoreCase(command.getEmail());  //se verifica si existe el email recibido por comando
+        User user = searchUserById(command.getId());  //se verifica si existe el email recibido por comando
         if(user == null){
-            log.info("Cannot find user with email={}", command.getEmail());
+            log.info("Cannot find user with id={}", command.getId());
 
-            return  ResponseEntity.badRequest().body(buildAlertResponse("invalid_mail"));
+            return  ResponseEntity.badRequest().body(buildAlertResponse("invalid_id"));
         }
         else{
             if (user.getAuthToken().equals("0")){ //si el usuario no ha iniciado sesion no se permite el logout
+                    log.info("User with id={} already logged out", command.getId());
                     return  ResponseEntity.badRequest().body(buildAlertResponse("already_logged_out"));
-                } else if (user.getAuthToken().equals(command.getAuthToken())){
+            }
+            else if (user.getAuthToken().equals(command.getAuthToken())){
 
                     log.info("Successful logout for user={}", user.getId());
 
                     user.setAuthToken("0");
                     user =userRepository.save(user);
                     return ResponseEntity.ok().body(buildAlertResponse("Successful logout for user with ID= "+user.getId()));
-                } else {
+            }
+            else {
                 return  ResponseEntity.badRequest().body(buildAlertResponse("unauthenticated_user"));
             }
-            }
+        }
     }
 
 
@@ -367,10 +387,10 @@ public class UserService {
 
            return ResponseEntity.badRequest().body(buildAlertResponse("matching_Ids."));
         }
-        else if(!(command.getAuthToken().equals(user.getAuthToken()))){
+        else if((!(command.getAuthToken().equals(user.getAuthToken()))) || (command.getAuthToken().equals("0"))){
            log.error("Wrong authentication token");
 
-           return ResponseEntity.badRequest().body(buildAlertResponse("wrong_authentication_Id."));
+           return ResponseEntity.badRequest().body(buildAlertResponse("unauthenticated_user."));
         }
         else{
            List<Long> friends = user.getFriends();
@@ -412,10 +432,10 @@ public class UserService {
 
             return ResponseEntity.badRequest().body(buildAlertResponse("friend_id_not_on_list"));
         }
-        else if(!(command.getAuthToken().equals(user.getAuthToken()))){
+        else if((!(command.getAuthToken().equals(user.getAuthToken()))) || (command.getAuthToken().equals("0"))){
             log.error("Wrong authentication token");
 
-            return ResponseEntity.badRequest().body(buildAlertResponse("wrong_authentication_Id."));
+            return ResponseEntity.badRequest().body(buildAlertResponse("unauthenticated_user."));
         }
         else{
             List<Long> friends = user.getFriends();
@@ -439,6 +459,27 @@ public class UserService {
                     log.error("Error removing friend ={} from user ={} friends list", friendId, user.getId());
                     return ResponseEntity.badRequest().body(buildAlertResponse("error_adding_friend"));
                 }
+            }
+        }
+    }
+
+    public ResponseEntity<Object> getFriendList(String id){
+        User user = searchUserById(id);
+        if(user == null){
+            log.info("Cannot find user with id={}", id);
+
+            return ResponseEntity.badRequest().body(buildAlertResponse("invalid_user_Id."));
+        }
+        else{
+            List<UserNormalResponse> friendList = createFriendList(user);
+            if(friendList.isEmpty()){
+                log.info("User ={} friend list is empty", id);
+
+                return ResponseEntity.ok().body(buildAlertResponse("empty_friend_list"));
+            }
+            else{
+                log.info("Returning friend list for user id={}", id);
+                return ResponseEntity.ok(friendList);
             }
         }
     }
