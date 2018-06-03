@@ -209,7 +209,7 @@ public class UserService {
                     }
                     else{
                         log.error("Invalid password");
-                        return ResponseEntity.ok().body(buildAlertResponse("invalid_password_size"));
+                        return ResponseEntity.badRequest().body(buildAlertResponse("invalid_password_size"));
                     }
 
                 }
@@ -283,7 +283,7 @@ public class UserService {
 
                     user.setAuthToken("0");
                     user =userRepository.save(user);
-                    return ResponseEntity.badRequest().body(buildAlertResponse("Successful logout for user with ID= "+user.getId()));
+                    return ResponseEntity.ok().body(buildAlertResponse("Successful logout for user with ID= "+user.getId()));
                 } else {
                 return  ResponseEntity.badRequest().body(buildAlertResponse("unauthenticated_user"));
             }
@@ -384,7 +384,7 @@ public class UserService {
                    log.info("Friend ={} added to user ={} friends list", friendId, user.getId());
                    user.setFriends(friends);
                    userRepository.save(user);
-                   return ResponseEntity.badRequest().body(buildAlertResponse("success"));
+                   return ResponseEntity.ok().body(buildAlertResponse("success"));
                }
                else {
                        log.error("Error adding friend ={} to user ={} friends list", friendId, user.getId());
@@ -428,7 +428,7 @@ public class UserService {
                     log.info("Friend ={} removed from user ={} friends list", friendId, user.getId());
                     user.setFriends(friends);
                     userRepository.save(user);
-                    return ResponseEntity.badRequest().body(buildAlertResponse("success"));
+                    return ResponseEntity.ok().body(buildAlertResponse("success"));
                 }
                 else {
                     log.error("Error removing friend ={} from user ={} friends list", friendId, user.getId());
