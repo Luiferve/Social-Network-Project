@@ -29,4 +29,16 @@ public class MediaController {
     public ResponseEntity removeFriend(@Valid @RequestBody UserRemoveMediaCommand command) {
         return mediaService.removeMedia(command);
     }
+
+    @RequestMapping(value = "/get/{id}", method = RequestMethod.GET)
+    public ResponseEntity getMediaById(@PathVariable("id") String id) {
+
+        return mediaService.getMediaById(id);
+    }
+
+    @RequestMapping(value = "/getList/{id}", method = RequestMethod.GET)
+    public ResponseEntity getMediaList(@PathVariable("id") String id) {
+
+        return mediaService.getMediaList(id);
+    }
 }

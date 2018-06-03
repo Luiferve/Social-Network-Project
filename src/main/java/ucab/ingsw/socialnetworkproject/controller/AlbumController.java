@@ -26,8 +26,15 @@ public class AlbumController {
         return albumService.addAlbum(command);
     }
 
+    @RequestMapping(value = "/get/{id}", method = RequestMethod.GET)
+    public ResponseEntity getAlbumById(@PathVariable("id") String id) {
+
+        return albumService.getAlbumById(id);
+    }
+
     @RequestMapping(value = "/getList/{id}", method = RequestMethod.GET)
-    public ResponseEntity getUser(@PathVariable("id") String id) {
+    public ResponseEntity getAlbumList(@PathVariable("id") String id) {
+
         return albumService.getAlbumList(id);
     }
 

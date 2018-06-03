@@ -149,6 +149,25 @@ public class AlbumService {
         }
     }
 
+    public ResponseEntity<Object> getAlbumById(String id){
+        if(!(albumRepository.existsById(Long.parseLong(id)))){
+            log.info("Cannot find album with id={}", id);
+
+            return ResponseEntity.badRequest().body(buildAlertResponse("invalid_album_Id."));
+        }
+        else {
+            Album album = albumRepository.findById(Long.parseLong(id)).get();
+            UserAlbumResponse albumResponse = new UserAlbumResponse();
+            albumResponse.setId(album.getId());
+            albumResponse.setName(album.getName());
+            albumResponse.setDescription(album.getDescription());
+            albumResponse.setMedia(album.getMedia());
+            log.info("Returning album info for album id={}", id);
+
+            return ResponseEntity.ok(albumResponse);
+        }
+    }
+
     public ResponseEntity<Object> getAlbumList(String id){
         User user = userService.searchUserById(id);
         if(user == null){

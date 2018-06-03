@@ -16,9 +16,9 @@ import java.util.List;
 @ToString
 public class Album  implements Serializable {
     @Id
-    private Long id;
+    private long id;
 
-    private Long user_id;
+    private long user_id;
     private String name;
     private String description;
     private List<Long> media = new ArrayList<>();
