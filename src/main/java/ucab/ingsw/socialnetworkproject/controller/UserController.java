@@ -37,12 +37,12 @@ public class UserController {
         return userService.logOut(command);
     }
 
-    @RequestMapping(value = "/friend", consumes = "application/json", method = RequestMethod.POST)
+    @RequestMapping(value = "/friend/add", consumes = "application/json", method = RequestMethod.POST)
     public ResponseEntity addFriend(@Valid @RequestBody UserFriendCommand command) {
         return userService.addFriend(command);
     }
 
-    @RequestMapping(value = "/friend", consumes = "application/json", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/friend/remove", consumes = "application/json", method = RequestMethod.DELETE)
     public ResponseEntity removeFriend(@Valid @RequestBody UserFriendCommand command) {
         return userService.removeFriend(command);
     }

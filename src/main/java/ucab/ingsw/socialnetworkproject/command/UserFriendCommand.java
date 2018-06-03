@@ -17,15 +17,13 @@ public class UserFriendCommand implements Serializable{
 
     @NotNull(message = "Se requiere direccion de email.")
     @NotEmpty(message = "Se requiere direccion de email.")
-    @Size(min = validationRules.EMAIL_MIN_SIZE, message = "El email debe contener al menos de 8 caracteres.")
-    @Email(message = "error.format.email")
-    private String email;
+    private String userId;
 
     @NotNull(message = "Se requiere token de autorizacion.")
     @NotEmpty(message = "Se requiere token de autorizacion.")
     private String authToken;
 
-//    @NotNull(message = "Se requiere el ID del amigo.")
-//    @NotEmpty(message = "Se requiere el ID del amigo.")
-    private long friendId;
+    @NotNull(message = "Se requiere el ID del amigo.")
+    @NotEmpty(message = "Se requiere el ID del amigo.")
+    private String friendId;
 }

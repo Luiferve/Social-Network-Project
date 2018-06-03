@@ -8,6 +8,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @ToString
@@ -22,6 +24,6 @@ public class User  implements Serializable {
     private String dateOfBirth;
     private String authToken;
 
-    //private Album[] albums;
-    private long[] friends;
+    private List<Long> albums = new ArrayList<>();
+    private List<Long> friends = new ArrayList<>();
 }

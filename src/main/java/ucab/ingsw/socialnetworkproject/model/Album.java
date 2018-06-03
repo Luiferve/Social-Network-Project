@@ -9,6 +9,8 @@ import ucab.ingsw.socialnetworkproject.model.Media;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @ToString
@@ -19,5 +21,5 @@ public class Album  implements Serializable {
     private long user_id;
     private String name;
     private String description;
-    private Media[] links;
+    private List<Media> links = new ArrayList<>();
 }

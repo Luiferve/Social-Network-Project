@@ -18,6 +18,7 @@ import java.security.MessageDigest;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -82,47 +83,6 @@ public class UserService {
         }
     }
 
-    public long[] StringToArray(String string){
-        string=string.substring(1,string.length()-1);
-        String[] stringArray=string.split(",");
-        long[] longArray=new long[stringArray.length];
-        for (int i=0; i<stringArray.length;i++){
-            longArray[i]=Long.parseLong(stringArray[i]);
-        }
-        return longArray;
-    }
-
-    public boolean existsInArray(long[] array,long id){
-        if (array==null) return false;
-        for (int i=0;i<array.length;i++){
-            if (array[i]==id) return true;
-        }
-        return false;
-    }
-
-    private long[] removeItem(long[]array,long id){
-        if(array==null) return null;
-        long[] newArray =new long[array.length-1];
-        int j=0;
-        for (int i=0;i<array.length;i++){
-            if (array[i]!=id){
-                newArray[j]=array[i];
-                j++;
-            }
-        }
-        return newArray;
-    }
-
-    private long[] addItem(long[] array,long id){
-        if (array==null) return new long[]{id};
-        long[] newArray=new long[array.length+1];
-        for (int i=0;i<array.length;i++){
-            newArray[i]=array[i];
-        }
-        newArray[newArray.length-1]=id;
-        return newArray;
-    }
-
     private User buildNewUser(UserSingUpCommand command) { //crea un usuario nuevo con los atributos recibidos por comando
         User user = new User();
         user.setId(System.currentTimeMillis());
@@ -132,9 +92,8 @@ public class UserService {
         user.setPassword(command.getPassword());
         user.setDateOfBirth(command.getDateOfBirth());
         user.setAuthToken("0");
-
+        user.setAlbums(null);
         user.setFriends(null);
-
         return user;
     }
 
@@ -147,8 +106,6 @@ public class UserService {
         user.setPassword(command.getPassword());
         user.setDateOfBirth(command.getDateOfBirth());
         user.setAuthToken(command.getAuthToken());
-
-
         return user;
     }
 
@@ -159,7 +116,7 @@ public class UserService {
         return response;
     }
 
-    private User searchUserById(String id) {  //Busqueda de usuario por id proporcionado
+    public User searchUserById(String id) {  //Busqueda de usuario por id proporcionado
         try {
             if(userRepository.findById(Long.parseLong(id)).isPresent()){ //se verifica que exista dicho id en la base de datos
                 return userRepository.findById(Long.parseLong(id)).get();
@@ -231,6 +188,7 @@ public class UserService {
                             if(command.getAuthToken().equals(oldUser.getAuthToken())){  //revisa que el usuario este iniciado
                                 User user = buildExistingUser(command, id);
                                 user.setFriends(oldUser.getFriends());
+                                user.setAlbums(oldUser.getAlbums());
                                 user = userRepository.save(user);
 
                                 log.info("Updated user with ID={}", user.getId());
@@ -392,98 +350,91 @@ public class UserService {
     }
 
     public ResponseEntity<Object> addFriend(UserFriendCommand command){
-        log.debug("About to process [{}]", command);
-        long friendId=command.getFriendId();
-        User user = userRepository.findByEmailIgnoreCase(command.getEmail());
-        User friend =searchUserById(Long.toString(friendId));
-        if(user == null){ //se verifica si existe el email recibido por comando
-            log.info("Cannot find user with email={}", command.getEmail());
+       User user = searchUserById(command.getUserId());
+       Long friendId = Long.parseLong(command.getFriendId());
+       if(user == null){
+           log.info("Cannot find user with name={}", command.getUserId());
 
-            return  ResponseEntity.badRequest().body(buildAlertResponse("invalid_mail"));
+           return ResponseEntity.badRequest().body(buildAlertResponse("invalid_user_Id."));
+       }
+       else if(!userRepository.existsById(friendId)){
+            log.info("Cannot find user with name={}", friendId);
+
+            return ResponseEntity.badRequest().body(buildAlertResponse("invalid_friend_Id."));
         }
-        else if (friend==null){ //se verifica si existe el amigo recibido por comando
-            log.info("Cannot find user with ID={}", friendId);
+        else if(user.getId() == friendId){
+           log.info("User id ={} cannot match friend id ={}", user.getId(), friendId);
 
-            return  ResponseEntity.badRequest().body(buildAlertResponse("invalid_friend_id"));
+           return ResponseEntity.badRequest().body(buildAlertResponse("matching_Ids."));
         }
-        else if (!(user.getAuthToken().equals(command.getAuthToken()))){ //se verifica que el usuario este autenticado
-            log.error("User with ID={} is unauthenticated",user.getId());
+        else if(!(command.getAuthToken().equals(user.getAuthToken()))){
+           log.error("Wrong authentication token");
 
-            return  ResponseEntity.badRequest().body(buildAlertResponse("unauthenticated_user"));
+           return ResponseEntity.badRequest().body(buildAlertResponse("wrong_authentication_Id."));
         }
         else{
-
-            long[] userFriends=user.getFriends();
-            if(userFriends!=null){
-                if (existsInArray(userFriends,friendId)){
-                    log.error("Friend with ID={} already in user's friends list", friendId);
-
-                    return ResponseEntity.badRequest().body(buildAlertResponse("already_in_friends_list"));
-                }
-                else{
-                    long[] newFriends=new long[userFriends.length+1];
-                    for (int i=0;i<userFriends.length;i++){
-                        newFriends[i]=userFriends[i];
-                    }
-                    newFriends[newFriends.length-1]=friendId;
-                    user.setFriends(newFriends);
-                }
-
-            }
-            else{
-                long[] newFriends={friendId};
-                user.setFriends(newFriends);
-            }
-            userRepository.save(user);
-            log.info("Added friend with ID={} to user with ID={}", friendId,user.getId());
-
-            return ResponseEntity.ok().body(buildAlertResponse("Operación Exitosa."));
-        }
+           List<Long> friends = user.getFriends();
+           if(friends.contains(friendId)){
+               log.info("Friend ={} already in user ={} friends list", friendId, user.getId());
+               return ResponseEntity.badRequest().body(buildAlertResponse("already_in_friends_list"));
+           }
+           else {
+               boolean result = friends.add(friendId);
+               if (result) {
+                   log.info("Friend ={} added to user ={} friends list", friendId, user.getId());
+                   user.setFriends(friends);
+                   userRepository.save(user);
+                   return ResponseEntity.badRequest().body(buildAlertResponse("success"));
+               }
+               else {
+                       log.error("Error adding friend ={} to user ={} friends list", friendId, user.getId());
+                       return ResponseEntity.badRequest().body(buildAlertResponse("error_adding_friend"));
+               }
+           }
+       }
     }
 
     public ResponseEntity<Object> removeFriend(UserFriendCommand command){
-        log.debug("About to process [{}]", command);
-        long friendId=command.getFriendId();
-        User user = userRepository.findByEmailIgnoreCase(command.getEmail());
-        User friend =searchUserById(Long.toString(friendId));
-        if(user == null){ //se verifica si existe el email recibido por comando
-            log.info("Cannot find user with email={}", command.getEmail());
+        User user = searchUserById(command.getUserId());
+        Long friendId = Long.parseLong(command.getFriendId());
+        if(user == null){
+            log.info("Cannot find user with name={}", command.getUserId());
 
-            return  ResponseEntity.badRequest().body(buildAlertResponse("invalid_mail"));
+            return ResponseEntity.badRequest().body(buildAlertResponse("invalid_user_Id."));
         }
-        else if (friend==null){ //se verifica si existe el amigo recibido por comando
-            log.info("Cannot find user with ID={}", friendId);
+        else if(!userRepository.existsById(friendId)){
+            log.info("Cannot find user with name={}", friendId);
 
-            return  ResponseEntity.badRequest().body(buildAlertResponse("invalid_friend_id"));
+            return ResponseEntity.badRequest().body(buildAlertResponse("invalid_friend_Id."));
         }
-        else if (!(user.getAuthToken().equals(command.getAuthToken()))){ //se verifica que el usuario este autenticado
-            log.error("User with ID={} is unauthenticated",user.getId());
+        else if(!(command.getAuthToken().equals(user.getAuthToken()))){
+            log.error("Wrong authentication token");
 
-            return  ResponseEntity.badRequest().body(buildAlertResponse("unauthenticated_user"));
+            return ResponseEntity.badRequest().body(buildAlertResponse("wrong_authentication_Id."));
         }
         else{
-
-            long[] userFriends=user.getFriends();
-            if(userFriends!=null){
-                if (!existsInArray(userFriends,friendId)){
-                    log.error("Friend with ID={} is not in user's friends list", friendId);
-
-                    return ResponseEntity.badRequest().body(buildAlertResponse("friend_is_not_in_the_list"));
-                }
-                else{
-                    user.setFriends(removeItem(userFriends,friendId));
-                }
-
+            List<Long> friends = user.getFriends();
+            if(friends.isEmpty()){
+                log.info("User ={} friends list is empty", friendId, user.getId());
+                return ResponseEntity.badRequest().body(buildAlertResponse("empty_friends_list"));
+            }
+            else if (!(friends.contains(friendId))){
+                log.info("Friend ={} is not on user ={} friends list", friendId, user.getId());
+                return ResponseEntity.badRequest().body(buildAlertResponse("friend_not_in_friends_list"));
             }
             else{
-                log.info("User with ID={} has an empty friend list", user.getId());
-
-                return ResponseEntity.badRequest().body(buildAlertResponse("empty_friend_list"));
+                boolean result = friends.remove(friendId);
+                if (result) {
+                    log.info("Friend ={} removed from user ={} friends list", friendId, user.getId());
+                    user.setFriends(friends);
+                    userRepository.save(user);
+                    return ResponseEntity.badRequest().body(buildAlertResponse("success"));
+                }
+                else {
+                    log.error("Error removing friend ={} from user ={} friends list", friendId, user.getId());
+                    return ResponseEntity.badRequest().body(buildAlertResponse("error_adding_friend"));
+                }
             }
-            userRepository.save(user);
-            log.info("Removed friend with ID={} from user with ID={}", friendId,user.getId());
-
-            return ResponseEntity.ok().body(buildAlertResponse("Operación Exitosa."));
         }
     }
 }
