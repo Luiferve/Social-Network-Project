@@ -407,6 +407,11 @@ public class UserService {
 
             return ResponseEntity.badRequest().body(buildAlertResponse("invalid_friend_Id."));
         }
+        else if(!(user.getFriends().stream().anyMatch(i-> i == friendId))){
+            log.info("Friend id ={} is not on user ={} friend list", friendId, command.getUserId());
+
+            return ResponseEntity.badRequest().body(buildAlertResponse("friend_id_not_on_list"));
+        }
         else if(!(command.getAuthToken().equals(user.getAuthToken()))){
             log.error("Wrong authentication token");
 
