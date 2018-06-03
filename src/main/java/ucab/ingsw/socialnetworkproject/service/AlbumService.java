@@ -92,7 +92,7 @@ public class AlbumService {
                     user.setAlbums(albumIdList);
                     userRepository.save(user);
                     albumRepository.save(album);
-                    return ResponseEntity.badRequest().body(buildAlertResponse("success"));
+                    return ResponseEntity.ok().body(buildAlertResponse("success"));
                 }
                 else{
                     log.error("Error adding album ={} to user ={} album list", album.getId(), user.getId());
@@ -131,7 +131,7 @@ public class AlbumService {
 
                 userRepository.save(user);
                 albumRepository.deleteById(Long.parseLong(command.getAlbumId()));
-                return ResponseEntity.badRequest().body(buildAlertResponse("success"));
+                return ResponseEntity.ok().body(buildAlertResponse("success"));
             }
             else{
                 log.error("Error removing album ={} from user ={} album list", command.getAlbumId(), user.getId());
