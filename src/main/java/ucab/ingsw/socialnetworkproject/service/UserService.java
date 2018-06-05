@@ -249,9 +249,8 @@ public class UserService {
         else{
             if (decrypt(command.getPassword()).length()>=6){ //verifica el tamaño de la contraseña
                 if(user.getPassword().equals(command.getPassword())) { //si las contrasenas coinciden se envia la informacion del usuario
-                    if (user.getAuthToken().equals("0")){ //si no tiene authorization token se permite el log in
+                    if (!user.getAuthToken().equals("0")) log.info ("user_was_already_logged_in");
                         log.info("Successful login for user={}", user.getId());
-
                         UserLogInResponse userLogInResponse = new UserLogInResponse();
                         userLogInResponse.setFirstName(user.getFirstName());
                         userLogInResponse.setLastName(user.getLastName());
@@ -263,11 +262,6 @@ public class UserService {
                         user =userRepository.save(user);
                         userLogInResponse.setAuthToken(user.getAuthToken());
                         return ResponseEntity.ok(userLogInResponse);
-                    } else {
-                        log.info("User ={} already logged in ", user.getId());
-
-                        return  ResponseEntity.badRequest().body(buildAlertResponse("already_logged_in"));
-                    }
                 }
                 else{
                     log.info("{} is not valid password for user {}", decrypt(command.getPassword()), user.getId());
