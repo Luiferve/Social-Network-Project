@@ -21,32 +21,10 @@ import java.util.List;
 @Slf4j
 
 @Service("mediaService")
-public class MediaService {
-
-    @Autowired
-    private AlbumRepository albumRepository;
-
-    @Autowired
-    private MediaRepository mediaRepository;
+public class MediaService extends Validation{
 
     @Autowired
     private UserService userService;
-
-    private Media buildNewMedia(UserNewMediaCommand command){
-        Media media = new Media();
-        media.setId(System.currentTimeMillis());
-        media.setAlbumId(Long.parseLong(command.getAlbumId()));
-        media.setUrl(command.getUrl());
-        media.setType(command.getType());
-        return media;
-    }
-
-    private AlertResponse buildAlertResponse(String message){ //crea un mensaje de alerta para ser transmitido al cliente
-        AlertResponse response = new AlertResponse();
-        response.setMessage(message);
-        response.setTimestamp(LocalDateTime.now());
-        return response;
-    }
 
     public List<UserMediaResponse> createMediaList(Album album){
         List<UserMediaResponse> mediaList = new ArrayList<>();

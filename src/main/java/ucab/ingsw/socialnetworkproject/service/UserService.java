@@ -21,31 +21,9 @@ public class UserService extends Validation{
 
 
 
-    private User buildNewUser(UserSingUpCommand command) { //crea un usuario nuevo con los atributos recibidos por comando
-        User user = new User();
-        user.setId(System.currentTimeMillis());
-        user.setFirstName(command.getFirstName());
-        user.setLastName(command.getLastName());
-        user.setEmail(command.getEmail());
-        user.setPassword(command.getPassword());
-        user.setDateOfBirth(command.getDateOfBirth());
-        user.setAuthToken("0");
-        user.setAlbums(null);
-        user.setFriends(null);
-        return user;
-    }
 
-    private User buildExistingUser(UserUpdateCommand command, String id) { //actualiza los datos de un usuario existente
-        User user = new User();
-        user.setId(Long.parseLong(id));
-        user.setFirstName(command.getFirstName());
-        user.setLastName(command.getLastName());
-        user.setEmail(command.getEmail().toLowerCase());
-        user.setPassword(command.getPassword());
-        user.setDateOfBirth(command.getDateOfBirth());
-        user.setAuthToken(command.getAuthToken());
-        return user;
-    }
+
+
 
 
 
@@ -197,22 +175,16 @@ public class UserService extends Validation{
            User user = searchUserById(command.getUserId());
            Long friendId = Long.parseLong(command.getFriendId());
            List<Long> friends = user.getFriends();
-           if(friends.contains(friendId)){
-               log.info("Friend ={} already in user ={} friends list", friendId, user.getId());
-               return ResponseEntity.badRequest().body(buildAlertResponse("already_in_friends_list"));
+           boolean result = friends.add(friendId);
+           if (result) {
+               log.info("Friend ={} added to user ={} friends list", friendId, user.getId());
+               user.setFriends(friends);
+               userRepository.save(user);
+               return ResponseEntity.ok().body(buildAlertResponse("success"));
            }
            else {
-               boolean result = friends.add(friendId);
-               if (result) {
-                   log.info("Friend ={} added to user ={} friends list", friendId, user.getId());
-                   user.setFriends(friends);
-                   userRepository.save(user);
-                   return ResponseEntity.ok().body(buildAlertResponse("success"));
-               }
-               else {
-                   log.error("Error adding friend ={} to user ={} friends list", friendId, user.getId());
-                   return ResponseEntity.badRequest().body(buildAlertResponse("error_adding_friend"));
-               }
+               log.error("Error adding friend ={} to user ={} friends list", friendId, user.getId());
+               return ResponseEntity.badRequest().body(buildAlertResponse("error_adding_friend"));
            }
        }
        else return res;
@@ -225,26 +197,16 @@ public class UserService extends Validation{
             User user = searchUserById(command.getUserId());
             Long friendId = Long.parseLong(command.getFriendId());
             List<Long> friends = user.getFriends();
-            if(friends.isEmpty()){
-                log.info("User ={} friends list is empty", friendId, user.getId());
-                return ResponseEntity.badRequest().body(buildAlertResponse("empty_friends_list"));
+            boolean result = friends.remove(friendId);
+            if (result) {
+                log.info("Friend ={} removed from user ={} friends list", friendId, user.getId());
+                user.setFriends(friends);
+                userRepository.save(user);
+                return ResponseEntity.ok().body(buildAlertResponse("success"));
             }
-            else if (!(friends.contains(friendId))){
-                log.info("Friend ={} is not on user ={} friends list", friendId, user.getId());
-                return ResponseEntity.badRequest().body(buildAlertResponse("friend_not_in_friends_list"));
-            }
-            else{
-                boolean result = friends.remove(friendId);
-                if (result) {
-                    log.info("Friend ={} removed from user ={} friends list", friendId, user.getId());
-                    user.setFriends(friends);
-                    userRepository.save(user);
-                    return ResponseEntity.ok().body(buildAlertResponse("success"));
-                }
-                else {
-                    log.error("Error removing friend ={} from user ={} friends list", friendId, user.getId());
-                    return ResponseEntity.badRequest().body(buildAlertResponse("error_removing_friend"));
-                }
+            else {
+                log.error("Error removing friend ={} from user ={} friends list", friendId, user.getId());
+                return ResponseEntity.badRequest().body(buildAlertResponse("error_removing_friend"));
             }
         }
         else return res;

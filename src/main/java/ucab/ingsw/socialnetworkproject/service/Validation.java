@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import ucab.ingsw.socialnetworkproject.command.*;
 import ucab.ingsw.socialnetworkproject.model.User;
+import ucab.ingsw.socialnetworkproject.repository.AlbumRepository;
+import ucab.ingsw.socialnetworkproject.repository.MediaRepository;
 import ucab.ingsw.socialnetworkproject.repository.UserRepository;
 import ucab.ingsw.socialnetworkproject.response.AlertResponse;
 import ucab.ingsw.socialnetworkproject.response.UserLogInResponse;
@@ -18,10 +20,16 @@ import java.util.Base64;
 import java.util.List;
 
 @Slf4j
-public class Validation {
+public class Validation extends Builder{
 
 	@Autowired
 	protected UserRepository userRepository;
+
+    @Autowired
+    protected AlbumRepository albumRepository;
+
+    @Autowired
+    protected MediaRepository mediaRepository;
 
     protected String getMD5(String text){ //encripta string usando MD5 hash
         try{
@@ -85,13 +93,6 @@ public class Validation {
     protected String decrypt(String text){ //decripta string usando base64
         byte[] decoded = Base64.getDecoder().decode(text);
         return new String(decoded);
-    }
-
-    protected AlertResponse buildAlertResponse(String message){ //crea un mensaje de alerta para ser transmitido al cliente
-        AlertResponse response = new AlertResponse();
-        response.setMessage(message);
-        response.setTimestamp(LocalDateTime.now());
-        return response;
     }
 
     public User searchUserById(String id) {  //Busqueda de usuario por id proporcionado
@@ -254,7 +255,14 @@ public class Validation {
             return ResponseEntity.badRequest().body(buildAlertResponse("unauthenticated_user."));
         }
         else{
-            return null;
+            List<Long> friends = user.getFriends();
+            if(friends.contains(friendId)){
+                log.info("Friend ={} already in user ={} friends list", friendId, user.getId());
+                return ResponseEntity.badRequest().body(buildAlertResponse("already_in_friends_list"));
+            }
+            else {
+                return null;
+            }
         }
     }
 
@@ -282,7 +290,18 @@ public class Validation {
             return ResponseEntity.badRequest().body(buildAlertResponse("unauthenticated_user."));
         }
         else{
-            return null;
+            List<Long> friends = user.getFriends();
+            if(friends.isEmpty()){
+                log.info("User ={} friends list is empty", friendId, user.getId());
+                return ResponseEntity.badRequest().body(buildAlertResponse("empty_friends_list"));
+            }
+            else if (!(friends.contains(friendId))){
+                log.info("Friend ={} is not on user ={} friends list", friendId, user.getId());
+                return ResponseEntity.badRequest().body(buildAlertResponse("friend_not_in_friends_list"));
+            }
+            else{
+                return null;
+            }
         }
     }
 }

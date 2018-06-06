@@ -21,37 +21,10 @@ import java.util.List;
 @Slf4j
 
 @Service("albumService")
-public class AlbumService {
-
-    @Autowired
-    private AlbumRepository albumRepository;
-
-    @Autowired
-    private UserRepository userRepository;
+public class AlbumService extends Validation{
 
     @Autowired
     private UserService userService;
-
-    @Autowired
-    private MediaRepository mediaRepository;
-
-
-    private Album buildNewAlbum (UserNewAlbumCommand command){
-        Album album =new Album();
-        album.setId(System.currentTimeMillis());
-        album.setUser_id(Long.parseLong(command.getUserId()));
-        album.setName(command.getName());
-        album.setDescription(command.getDescription());
-        return album;
-    }
-
-    private AlertResponse buildAlertResponse(String message){ //crea un mensaje de alerta para ser transmitido al cliente
-        AlertResponse response = new AlertResponse();
-        response.setMessage(message);
-        response.setTimestamp(LocalDateTime.now());
-        return response;
-    }
-
 
     public List<UserAlbumResponse> createAlbumList(User user){
         List<UserAlbumResponse> albumList = new ArrayList<>();
