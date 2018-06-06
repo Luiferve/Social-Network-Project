@@ -1,87 +1,25 @@
 package ucab.ingsw.socialnetworkproject.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import ucab.ingsw.socialnetworkproject.command.*;
-import ucab.ingsw.socialnetworkproject.response.AlertResponse;
 import ucab.ingsw.socialnetworkproject.response.UserLogInResponse;
 import ucab.ingsw.socialnetworkproject.model.User;
-import ucab.ingsw.socialnetworkproject.repository.UserRepository;
 import ucab.ingsw.socialnetworkproject.response.UserNormalResponse;
 import ucab.ingsw.socialnetworkproject.response.UserProfileResponse;
 
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 
 @Service("userService")
-public class UserService {
+public class UserService extends Validation{
 
-    @Autowired //Inyecta el repositorio de usuario al momento de ejecucion.
-    private UserRepository userRepository;
+    
 
-    private String getMD5(String text){ //encripta string usando MD5 hash
-        try{
-            MessageDigest md5 = MessageDigest.getInstance("MD5");
-            md5.update(StandardCharsets.UTF_8.encode(text));
-            return String.format("%032x", new BigInteger(1, md5.digest()));
-        }
-        catch (java.security.NoSuchAlgorithmException no_existe_el_algoritmo){
-            System.out.println("ERROR");
-        }
-        return null;
-    }
 
-    private String encrypt(String text){ //encripta string usando base64
-        byte[] textBytes=text.getBytes();
-        return Base64.getEncoder().encodeToString(textBytes);
-    }
-
-    private String decrypt(String text){ //decripta string usando base64
-        byte[] decoded = Base64.getDecoder().decode(text);
-        return new String(decoded);
-    }
-
-    public static boolean validDate (String string){
-        String[] splited=string.split("/");
-        int year=Integer.parseInt(splited[0]);
-        int mon=Integer.parseInt(splited[1]);
-        int day=Integer.parseInt(splited[2]);
-        if (!(year>0 && mon>0 && mon<13 && day>0 && day<32)) return false; //valores fuera de rango
-        int b=0;
-        if (year%400==0) b=1; //año bisiesto?
-        else if (year %4==0 && year%100!=0)b=1;
-        if (mon==2 && day>(28+b)) return false; // febrero fuera de rango
-        LocalDateTime current = LocalDateTime.now();
-        if (current.getYear()>year){// año pasado
-            return true;
-        } else if (current.getYear()==year){ //mismo año
-            if (current.getMonthValue()>mon){//mes pasado
-                return true;
-            } else if (current.getMonthValue()==mon){// mismo mes
-                if (current.getDayOfMonth()>day){ //dia pasado
-                    return true;
-                } else if (current.getDayOfMonth()==day){ //mismo dia
-                    return false;
-                } else { //dia futuro
-                    return false;
-                }
-            } else { //mes futuro
-                return false;
-            }
-        } else { //año futuro
-            return false;
-        }
-    }
 
     private User buildNewUser(UserSingUpCommand command) { //crea un usuario nuevo con los atributos recibidos por comando
         User user = new User();
@@ -109,24 +47,7 @@ public class UserService {
         return user;
     }
 
-    private AlertResponse buildAlertResponse(String message){ //crea un mensaje de alerta para ser transmitido al cliente
-        AlertResponse response = new AlertResponse();
-        response.setMessage(message);
-        response.setTimestamp(LocalDateTime.now());
-        return response;
-    }
 
-    public User searchUserById(String id) {  //Busqueda de usuario por id proporcionado
-        try {
-            if(userRepository.findById(Long.parseLong(id)).isPresent()){ //se verifica que exista dicho id en la base de datos
-                return userRepository.findById(Long.parseLong(id)).get();
-            }
-            else
-                return null;
-        } catch (NumberFormatException e) {
-            return null;
-        }
-    }
 
     public List<UserNormalResponse> createFriendList(User user) {
         List<UserNormalResponse> friendList = new ArrayList<>();
@@ -147,161 +68,67 @@ public class UserService {
 
     public ResponseEntity<Object> registerUser(UserSingUpCommand command) { //registro de usuarios
         log.debug("About to process [{}]", command);
+        ResponseEntity res=validRegister(command);
+        if (res==null){
+            User user = buildNewUser(command);
+            user = userRepository.save(user);
 
-        if(userRepository.existsByEmailIgnoreCase(command.getEmail())){ // se revisa si el email ya existe en la base de datos
-            log.info("email {} already registered", command.getEmail());
+            log.info("Registered user with ID={}", user.getId());
 
-            return ResponseEntity.badRequest().body(buildAlertResponse("El usuario ya se encuentra registrado en el sistema."));
+            return ResponseEntity.ok().body(buildAlertResponse("Operación Exitosa."));
         }
-        else {
-            if (decrypt(command.getPassword()).length()>=6){ // se valida el tamaño de la contraseña
-                if(!command.getPassword().equals(command.getConfirmationPassword())) { //se compara la contrasena con la contrasena de confirmacion
-                    log.info("Mismatching passwords.");
-                    return ResponseEntity.badRequest().body(buildAlertResponse("Las contraseñas no coinciden"));
-                }
-
-                else { // si el email no existe y las contrasenas coinciden se agrega el usuario a la base de datos
-                    if (validDate(command.getDateOfBirth())){ //valida la fecha
-                        User user = buildNewUser(command);
-                        user = userRepository.save(user);
-
-                        log.info("Registered user with ID={}", user.getId());
-
-                        return ResponseEntity.ok().body(buildAlertResponse("Operación Exitosa."));
-                    }
-                    else {
-                        log.error("Invalid date");
-                        return  ResponseEntity.badRequest().body(buildAlertResponse("invalid_date"));
-                    }
-
-                }
-            }
-            else{
-                log.error("Invalid password size");
-                return  ResponseEntity.badRequest().body(buildAlertResponse("invalid_password_size"));
-            }
-
-        }
+        else return res;
     }
 
     public ResponseEntity<Object> updateUser(UserUpdateCommand command, String id) {
         log.debug("About to process [{}]", command);
-        try {
-            if (!userRepository.existsById(Long.parseLong(id))) { //se verifica si el id proporcionado es correcto
-                log.info("Cannot find user with ID={}", id);
-
-                return ResponseEntity.badRequest().body(buildAlertResponse("invalid_Id"));
-            } else {
-                User oldUser=userRepository.findById(Long.parseLong(id)).get();
-                String emailOriginal = oldUser.getEmail();
-                String emailNuevo = command.getEmail();
-                if ((userRepository.existsByEmailIgnoreCase(emailNuevo)) && !(emailNuevo.equals(emailOriginal))) { // se revisa si el email ya existe en la base de datos
-                    log.info("email {} already registered", command.getEmail());
-
-                    return ResponseEntity.badRequest().body(buildAlertResponse("El email ya se encuentra registrado en el sistema."));
-                } else {    //se actualiza la informacion del usuario
-                    if (decrypt(command.getPassword()).length()>=6){ // se valida el tamaño de la contraseña
-                        if (validDate(command.getDateOfBirth())){ // se valida la fecha
-                            if(command.getAuthToken().equals(oldUser.getAuthToken())){  //revisa que el usuario este iniciado
-                                User user = buildExistingUser(command, id);
-                                user.setFriends(oldUser.getFriends());
-                                user.setAlbums(oldUser.getAlbums());
-                                user = userRepository.save(user);
-
-                                log.info("Updated user with ID={}", user.getId());
-
-                                return ResponseEntity.ok().body(buildAlertResponse("Operación Exitosa."));
-                            }else{
-                                log.error("User with ID={} is not unauthenticated", id);
-
-                                return ResponseEntity.badRequest().body(buildAlertResponse("unauthenticated_user"));
-
-                            }
-                        }
-                        else{
-                            log.error("Invalid date");
-                            return  ResponseEntity.badRequest().body(buildAlertResponse("invalid_date"));
-                        }
-
-                    }
-                    else{
-                        log.error("Invalid password");
-                        return ResponseEntity.badRequest().body(buildAlertResponse("invalid_password_size"));
-                    }
-
-                }
-            }
-        } catch(NumberFormatException e){
-            log.info("Cannot find user with ID={}", id);
-
-            return ResponseEntity.badRequest().body(buildAlertResponse("invalid_Id"));
+        ResponseEntity res =validUpdate(command,id);
+        if(res==null){
+            User oldUser=userRepository.findById(Long.parseLong(id)).get();
+            User user = buildExistingUser(command, id);
+            user.setFriends(oldUser.getFriends());
+            user.setAlbums(oldUser.getAlbums());
+            user = userRepository.save(user);
+            log.info("Updated user with ID={}", user.getId());
+            return ResponseEntity.ok().body(buildAlertResponse("Operación Exitosa."));
         }
+        else return res;
     }
 
     public ResponseEntity<Object> loginAuthenticator(UserLoginCommand command) {
         log.debug("About to process [{}]", command);
-        User user = userRepository.findByEmailIgnoreCase(command.getEmail());  //se verifica si existe el email recibido por comando
-        if(user == null){
-            log.info("Cannot find user with email={}", command.getEmail());
+        ResponseEntity res =validLogin(command);
+        if (res==null){
+            User user = userRepository.findByEmailIgnoreCase(command.getEmail());
+            log.info("Successful login for user={}", user.getId());
 
-            return  ResponseEntity.badRequest().body(buildAlertResponse("invalid_mail"));
+            UserLogInResponse userLogInResponse = new UserLogInResponse();
+            userLogInResponse.setFirstName(user.getFirstName());
+            userLogInResponse.setLastName(user.getLastName());
+            userLogInResponse.setEmail(user.getEmail());
+            userLogInResponse.setId(user.getId());
+            userLogInResponse.setDateOfBirth(user.getDateOfBirth());
+            String token=getMD5(user.getEmail())+"."+getMD5(Long.toString(System.currentTimeMillis()));
+            user.setAuthToken(token);
+            user =userRepository.save(user);
+            userLogInResponse.setAuthToken(user.getAuthToken());
+            return ResponseEntity.ok(userLogInResponse);
         }
-        else{
-            if (decrypt(command.getPassword()).length()>=6){ //verifica el tamaño de la contraseña
-                if(user.getPassword().equals(command.getPassword())) { //si las contrasenas coinciden se envia la informacion del usuario
-                    if (!user.getAuthToken().equals("0")) log.info ("user_was_already_logged_in");
-                        log.info("Successful login for user={}", user.getId());
-                        UserLogInResponse userLogInResponse = new UserLogInResponse();
-                        userLogInResponse.setFirstName(user.getFirstName());
-                        userLogInResponse.setLastName(user.getLastName());
-                        userLogInResponse.setEmail(user.getEmail());
-                        userLogInResponse.setId(user.getId());
-                        userLogInResponse.setDateOfBirth(user.getDateOfBirth());
-                        String token=getMD5(user.getEmail())+"."+getMD5(Long.toString(System.currentTimeMillis()));
-                        user.setAuthToken(token);
-                        user =userRepository.save(user);
-                        userLogInResponse.setAuthToken(user.getAuthToken());
-                        return ResponseEntity.ok(userLogInResponse);
-                }
-                else{
-                    log.info("{} is not valid password for user {}", decrypt(command.getPassword()), user.getId());
-
-                    return  ResponseEntity.badRequest().body(buildAlertResponse("invalid_pass"));
-                }
-            }
-            else{
-                return  ResponseEntity.badRequest().body(buildAlertResponse("invalid_password_size"));
-            }
-
-        }
-
+        else return res;
     }
 
     public ResponseEntity<Object> logOut (UserLogoutCommand command){
         log.debug("About to process [{}]", command);
-        User user = searchUserById(command.getId());  //se verifica si existe el email recibido por comando
-        if(user == null){
-            log.info("Cannot find user with id={}", command.getId());
+        ResponseEntity res=validLogout(command);
+        if (res==null){
+            User user = searchUserById(command.getId());
+            log.info("Successful logout for user={}", user.getId());
 
-            return  ResponseEntity.badRequest().body(buildAlertResponse("invalid_id"));
+            user.setAuthToken("0");
+            user =userRepository.save(user);
+            return ResponseEntity.ok().body(buildAlertResponse("Successful logout for user with ID= "+user.getId()));
         }
-        else{
-            if (user.getAuthToken().equals("0")){ //si el usuario no ha iniciado sesion no se permite el logout
-                    log.info("User with id={} already logged out", command.getId());
-                    return  ResponseEntity.badRequest().body(buildAlertResponse("already_logged_out"));
-            }
-            else if (user.getAuthToken().equals(command.getAuthToken())){
-
-                    log.info("Successful logout for user={}", user.getId());
-
-                    user.setAuthToken("0");
-                    user =userRepository.save(user);
-                    return ResponseEntity.ok().body(buildAlertResponse("Successful logout for user with ID= "+user.getId()));
-            }
-            else {
-                return  ResponseEntity.badRequest().body(buildAlertResponse("unauthenticated_user"));
-            }
-        }
+        else return res;
     }
 
 
@@ -364,29 +191,11 @@ public class UserService {
     }
 
     public ResponseEntity<Object> addFriend(UserFriendCommand command){
-       User user = searchUserById(command.getUserId());
-       Long friendId = Long.parseLong(command.getFriendId());
-       if(user == null){
-           log.info("Cannot find user with name={}", command.getUserId());
-
-           return ResponseEntity.badRequest().body(buildAlertResponse("invalid_user_Id."));
-       }
-       else if(!userRepository.existsById(friendId)){
-            log.info("Cannot find user with name={}", friendId);
-
-            return ResponseEntity.badRequest().body(buildAlertResponse("invalid_friend_Id."));
-        }
-        else if(user.getId() == friendId){
-           log.info("User id ={} cannot match friend id ={}", user.getId(), friendId);
-
-           return ResponseEntity.badRequest().body(buildAlertResponse("matching_Ids."));
-        }
-        else if((!(command.getAuthToken().equals(user.getAuthToken()))) || (command.getAuthToken().equals("0"))){
-           log.error("Wrong authentication token");
-
-           return ResponseEntity.badRequest().body(buildAlertResponse("unauthenticated_user."));
-        }
-        else{
+        log.debug("About to process adding friend [{}]", command);
+        ResponseEntity res=validAddFriend(command);
+       if (res ==null){
+           User user = searchUserById(command.getUserId());
+           Long friendId = Long.parseLong(command.getFriendId());
            List<Long> friends = user.getFriends();
            if(friends.contains(friendId)){
                log.info("Friend ={} already in user ={} friends list", friendId, user.getId());
@@ -401,37 +210,20 @@ public class UserService {
                    return ResponseEntity.ok().body(buildAlertResponse("success"));
                }
                else {
-                       log.error("Error adding friend ={} to user ={} friends list", friendId, user.getId());
-                       return ResponseEntity.badRequest().body(buildAlertResponse("error_adding_friend"));
+                   log.error("Error adding friend ={} to user ={} friends list", friendId, user.getId());
+                   return ResponseEntity.badRequest().body(buildAlertResponse("error_adding_friend"));
                }
            }
        }
+       else return res;
     }
 
     public ResponseEntity<Object> removeFriend(UserFriendCommand command){
-        User user = searchUserById(command.getUserId());
-        Long friendId = Long.parseLong(command.getFriendId());
-        if(user == null){
-            log.info("Cannot find user with name={}", command.getUserId());
-
-            return ResponseEntity.badRequest().body(buildAlertResponse("invalid_user_Id."));
-        }
-        else if(!userRepository.existsById(friendId)){
-            log.info("Cannot find user with name={}", friendId);
-
-            return ResponseEntity.badRequest().body(buildAlertResponse("invalid_friend_Id."));
-        }
-        else if(!(user.getFriends().stream().anyMatch(i-> i == friendId))){
-            log.info("Friend id ={} is not on user ={} friend list", friendId, command.getUserId());
-
-            return ResponseEntity.badRequest().body(buildAlertResponse("friend_id_not_on_list"));
-        }
-        else if((!(command.getAuthToken().equals(user.getAuthToken()))) || (command.getAuthToken().equals("0"))){
-            log.error("Wrong authentication token");
-
-            return ResponseEntity.badRequest().body(buildAlertResponse("unauthenticated_user."));
-        }
-        else{
+        log.debug("About to process removing friend [{}]", command);
+        ResponseEntity res = validRemoveFriend(command);
+        if (res==null){
+            User user = searchUserById(command.getUserId());
+            Long friendId = Long.parseLong(command.getFriendId());
             List<Long> friends = user.getFriends();
             if(friends.isEmpty()){
                 log.info("User ={} friends list is empty", friendId, user.getId());
@@ -451,10 +243,11 @@ public class UserService {
                 }
                 else {
                     log.error("Error removing friend ={} from user ={} friends list", friendId, user.getId());
-                    return ResponseEntity.badRequest().body(buildAlertResponse("error_adding_friend"));
+                    return ResponseEntity.badRequest().body(buildAlertResponse("error_removing_friend"));
                 }
             }
         }
+        else return res;
     }
 
     public ResponseEntity<Object> getFriendList(String id){
