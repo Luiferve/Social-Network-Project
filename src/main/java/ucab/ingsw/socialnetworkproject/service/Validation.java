@@ -5,17 +5,21 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import ucab.ingsw.socialnetworkproject.command.*;
+import ucab.ingsw.socialnetworkproject.model.Album;
+import ucab.ingsw.socialnetworkproject.model.Media;
 import ucab.ingsw.socialnetworkproject.model.User;
 import ucab.ingsw.socialnetworkproject.repository.AlbumRepository;
 import ucab.ingsw.socialnetworkproject.repository.MediaRepository;
 import ucab.ingsw.socialnetworkproject.repository.UserRepository;
 import ucab.ingsw.socialnetworkproject.response.AlertResponse;
+import ucab.ingsw.socialnetworkproject.response.UserAlbumResponse;
 import ucab.ingsw.socialnetworkproject.response.UserLogInResponse;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
@@ -30,6 +34,9 @@ public class Validation extends Builder{
 
     @Autowired
     protected MediaRepository mediaRepository;
+
+    @Autowired
+    protected UserService userService;
 
     protected String getMD5(String text){ //encripta string usando MD5 hash
         try{
@@ -105,6 +112,22 @@ public class Validation extends Builder{
         } catch (NumberFormatException e) {
             return null;
         }
+    }
+
+    public List<UserAlbumResponse> createAlbumList(User user){
+        List<UserAlbumResponse> albumList = new ArrayList<>();
+        List<Long> albumIdList = user.getAlbums();
+        albumRepository.findAll().forEach(it->{
+            if(albumIdList.stream().anyMatch(item -> item == it.getId())){
+                UserAlbumResponse albumResponse = new UserAlbumResponse();
+                albumResponse.setId(it.getId());
+                albumResponse.setName(it.getName());
+                albumResponse.setDescription(it.getDescription());
+                albumResponse.setMedia(it.getMedia());
+                albumList.add(albumResponse);
+            }
+        });
+        return albumList;
     }
 
     protected boolean validPasswordSize(String pass){
@@ -298,6 +321,126 @@ public class Validation extends Builder{
             else if (!(friends.contains(friendId))){
                 log.info("Friend ={} is not on user ={} friends list", friendId, user.getId());
                 return ResponseEntity.badRequest().body(buildAlertResponse("friend_not_in_friends_list"));
+            }
+            else{
+                return null;
+            }
+        }
+    }
+
+    protected ResponseEntity<Object> validAddAlbum (UserNewAlbumCommand command){
+        User user = userService.searchUserById(command.getUserId());
+        if(user == null){
+            log.info("Cannot find user with name={}", command.getUserId());
+
+            return ResponseEntity.badRequest().body(buildAlertResponse("invalid_user_Id."));
+        }
+        else if((!(command.getAuthToken().equals(user.getAuthToken()))) || (command.getAuthToken().equals("0"))) {
+            log.error("Wrong authentication token");
+
+            return ResponseEntity.badRequest().body(buildAlertResponse("unauthenticated_user."));
+        }
+        else{
+            List<UserAlbumResponse> albumList = createAlbumList(user);
+            List<Long> albumIdList = user.getAlbums();
+            if(albumList.stream().anyMatch(i -> i.getName().equals(command.getName()))){
+                log.info("Album name ={} already on list", command.getName());
+
+                return ResponseEntity.badRequest().body(buildAlertResponse("album_name_already_used"));
+            }
+            else{
+                return null;
+            }
+        }
+    }
+
+    protected ResponseEntity<Object> validRemoveAlbum (UserRemoveAlbumCommand command){
+        User user = userService.searchUserById(command.getUserId());
+        if(user == null){
+            log.info("Cannot find user with name={}", command.getUserId());
+
+            return ResponseEntity.badRequest().body(buildAlertResponse("invalid_user_Id."));
+        }
+        else if((!(command.getAuthToken().equals(user.getAuthToken()))) || (command.getAuthToken().equals("0"))) {
+            log.error("unauthenticated_user.");
+
+            return ResponseEntity.badRequest().body(buildAlertResponse("unauthenticated_user."));
+        }
+        else if(!(albumRepository.existsById(Long.parseLong(command.getAlbumId())))){
+            log.info("Cannot find album with id={}", command.getAlbumId());
+
+            return ResponseEntity.badRequest().body(buildAlertResponse("invalid_album_Id."));
+        }
+        else if(!(user.getAlbums().stream().anyMatch(i-> i == Long.parseLong(command.getAlbumId())))){
+            log.info("Album id ={} is not on user ={} album list", command.getAlbumId(), command.getUserId());
+
+            return ResponseEntity.badRequest().body(buildAlertResponse("album_id_not_on_list"));
+        }
+        else{
+            return  null;
+        }
+    }
+
+    protected ResponseEntity<Object> validAddMedia (UserNewMediaCommand command){
+        User user = userService.searchUserById(command.getUserId());
+        if(user == null){
+            log.info("Cannot find user with name={}", command.getUserId());
+
+            return ResponseEntity.badRequest().body(buildAlertResponse("invalid_user_Id."));
+        }
+        else if((!(command.getAuthToken().equals(user.getAuthToken()))) || (command.getAuthToken().equals("0"))) {
+            log.error("unauthenticated_user.");
+
+            return ResponseEntity.badRequest().body(buildAlertResponse("unauthenticated_user."));
+        }
+        else if(!(albumRepository.existsById(Long.parseLong(command.getAlbumId())))){
+            log.info("Cannot find album with id={}", command.getAlbumId());
+
+            return ResponseEntity.badRequest().body(buildAlertResponse("invalid_album_Id."));
+        }
+        else if(!(user.getAlbums().stream().anyMatch(i-> i == Long.parseLong(command.getAlbumId())))){
+            log.info("Album id ={} is not on user ={} album list", command.getAlbumId(), command.getUserId());
+
+            return ResponseEntity.badRequest().body(buildAlertResponse("album_id_not_on_list"));
+        }
+        else{
+            return null;
+        }
+    }
+
+    protected ResponseEntity<Object> validRemoveMedia (UserRemoveMediaCommand command){
+        User user = userService.searchUserById(command.getUserId());
+        if(user == null){
+            log.info("Cannot find user with name={}", command.getUserId());
+
+            return ResponseEntity.badRequest().body(buildAlertResponse("invalid_user_Id."));
+        }
+        else if((!(command.getAuthToken().equals(user.getAuthToken()))) || (command.getAuthToken().equals("0"))) {
+            log.error("unauthenticated_user.");
+
+            return ResponseEntity.badRequest().body(buildAlertResponse("unauthenticated_user."));
+        }
+        else if(!(albumRepository.existsById(Long.parseLong(command.getAlbumId())))){
+            log.info("Cannot find album with id={}", command.getAlbumId());
+
+            return ResponseEntity.badRequest().body(buildAlertResponse("invalid_album_Id."));
+        }
+        else if(!(user.getAlbums().stream().anyMatch(i-> i == Long.parseLong(command.getAlbumId())))){
+            log.info("Album id ={} is not on user ={} album list", command.getAlbumId(), command.getUserId());
+
+            return ResponseEntity.badRequest().body(buildAlertResponse("album_id_not_on_list"));
+        }
+        else if(!(mediaRepository.existsById(Long.parseLong(command.getMediaId())))){
+            log.info("Cannot find media with id={}", command.getMediaId());
+
+            return ResponseEntity.badRequest().body(buildAlertResponse("invalid_media_Id."));
+        }
+        else{
+            Album album = albumRepository.findById(Long.parseLong(command.getAlbumId())).get();
+            if(!(album.getMedia().stream().anyMatch(i-> i == Long.parseLong(command.getMediaId())))){
+                log.info("Media id ={} is not on album ={} media list", command.getAlbumId(), command.getMediaId());
+
+                return ResponseEntity.badRequest().body(buildAlertResponse("media_id_not_on_list"));
             }
             else{
                 return null;

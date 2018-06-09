@@ -23,86 +23,30 @@ import java.util.List;
 @Service("albumService")
 public class AlbumService extends Validation{
 
-    @Autowired
-    private UserService userService;
-
-    public List<UserAlbumResponse> createAlbumList(User user){
-        List<UserAlbumResponse> albumList = new ArrayList<>();
-        List<Long> albumIdList = user.getAlbums();
-        albumRepository.findAll().forEach(it->{
-            if(albumIdList.stream().anyMatch(item -> item == it.getId())){
-                UserAlbumResponse albumResponse = new UserAlbumResponse();
-                albumResponse.setId(it.getId());
-                albumResponse.setName(it.getName());
-                albumResponse.setDescription(it.getDescription());
-                albumResponse.setMedia(it.getMedia());
-                albumList.add(albumResponse);
-            }
-        });
-        return albumList;
-    }
-
     public ResponseEntity<Object> addAlbum(UserNewAlbumCommand command){
-        User user = userService.searchUserById(command.getUserId());
-        if(user == null){
-            log.info("Cannot find user with name={}", command.getUserId());
-
-            return ResponseEntity.badRequest().body(buildAlertResponse("invalid_user_Id."));
-        }
-        else if((!(command.getAuthToken().equals(user.getAuthToken()))) || (command.getAuthToken().equals("0"))) {
-            log.error("Wrong authentication token");
-
-            return ResponseEntity.badRequest().body(buildAlertResponse("unauthenticated_user."));
-        }
-        else{
-            List<UserAlbumResponse> albumList = createAlbumList(user);
+        ResponseEntity res =validAddAlbum(command);
+        if (res==null) {
+            User user = userService.searchUserById(command.getUserId());
             List<Long> albumIdList = user.getAlbums();
-            if(albumList.stream().anyMatch(i -> i.getName().equals(command.getName()))){
-                log.info("Album name ={} already on list", command.getName());
-
-                return ResponseEntity.badRequest().body(buildAlertResponse("album_name_already_used"));
+            Album album = buildNewAlbum(command);
+            boolean result = albumIdList.add(album.getId());
+            if (result) {
+                log.info("Album ={} added to user ={} album list", album.getId(), user.getId());
+                user.setAlbums(albumIdList);
+                userRepository.save(user);
+                albumRepository.save(album);
+                return ResponseEntity.ok().body(buildAlertResponse("success"));
+            } else {
+                log.error("Error adding album ={} to user ={} album list", album.getId(), user.getId());
+                return ResponseEntity.badRequest().body(buildAlertResponse("error_adding_album"));
             }
-            else{
-                Album album = buildNewAlbum(command);
-                boolean result = albumIdList.add(album.getId());
-                if(result){
-                    log.info("Album ={} added to user ={} album list", album.getId(), user.getId());
-                    user.setAlbums(albumIdList);
-                    userRepository.save(user);
-                    albumRepository.save(album);
-                    return ResponseEntity.ok().body(buildAlertResponse("success"));
-                }
-                else{
-                    log.error("Error adding album ={} to user ={} album list", album.getId(), user.getId());
-                    return ResponseEntity.badRequest().body(buildAlertResponse("error_adding_album"));
-                }
-            }
-        }
+        } else return res;
     }
 
     public ResponseEntity<Object> removeAlbum(UserRemoveAlbumCommand command){
-        User user = userService.searchUserById(command.getUserId());
-        if(user == null){
-            log.info("Cannot find user with name={}", command.getUserId());
-
-            return ResponseEntity.badRequest().body(buildAlertResponse("invalid_user_Id."));
-        }
-        else if((!(command.getAuthToken().equals(user.getAuthToken()))) || (command.getAuthToken().equals("0"))) {
-            log.error("unauthenticated_user.");
-
-            return ResponseEntity.badRequest().body(buildAlertResponse("unauthenticated_user."));
-        }
-        else if(!(albumRepository.existsById(Long.parseLong(command.getAlbumId())))){
-            log.info("Cannot find album with id={}", command.getAlbumId());
-
-            return ResponseEntity.badRequest().body(buildAlertResponse("invalid_album_Id."));
-        }
-        else if(!(user.getAlbums().stream().anyMatch(i-> i == Long.parseLong(command.getAlbumId())))){
-            log.info("Album id ={} is not on user ={} album list", command.getAlbumId(), command.getUserId());
-
-            return ResponseEntity.badRequest().body(buildAlertResponse("album_id_not_on_list"));
-        }
-        else{
+        ResponseEntity res =validRemoveAlbum(command);
+        if (res==null){
+            User user = userService.searchUserById(command.getUserId());
             Album album = albumRepository.findById(Long.parseLong(command.getAlbumId())).get();
             album.getMedia().forEach(it->{
                 mediaRepository.deleteById(it);
@@ -119,7 +63,7 @@ public class AlbumService extends Validation{
                 log.error("Error removing album ={} from user ={} album list", command.getAlbumId(), user.getId());
                 return ResponseEntity.badRequest().body(buildAlertResponse("error_removing_album"));
             }
-        }
+        } else return res;
     }
 
     public ResponseEntity<Object> getAlbumById(String id){
