@@ -80,7 +80,7 @@ public class MediaService {
                 albumRepository.save(album);
                 mediaRepository.save(media);
 
-                return ResponseEntity.ok().body(builder.buildAlertResponse("success"));
+                return ResponseEntity.ok().body(builder.buildSuccessResponse("success", String.valueOf(media.getId())));
             }
             else{
                 log.error("Error adding media ={} to album ={} media list", album.getId(), user.getId());

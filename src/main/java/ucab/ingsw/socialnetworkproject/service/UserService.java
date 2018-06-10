@@ -112,7 +112,7 @@ public class UserService {
 
             log.info("Registered user with ID={}", user.getId());
 
-            return dataValidation.getResponseEntity();
+            return ResponseEntity.ok().body(builder.buildSuccessResponse("success", String.valueOf(user.getId())));
         }
     }
 

@@ -96,7 +96,7 @@ public class AlbumService {
                     user.setAlbums(albumIdList);
                     userRepository.save(user);
                     albumRepository.save(album);
-                    return ResponseEntity.ok().body(builder.buildAlertResponse("success"));
+                    return ResponseEntity.ok().body(builder.buildSuccessResponse("success", String.valueOf(album.getId())));
                 }
                 else{
                     log.error("Error adding album ={} to user ={} album list", album.getId(), user.getId());

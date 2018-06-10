@@ -191,7 +191,6 @@ public class DataValidation {
             return false;
         }
         else{
-            responseEntity = ResponseEntity.ok().body(builder.buildAlertResponse("success"));
             return true;
         }
     }

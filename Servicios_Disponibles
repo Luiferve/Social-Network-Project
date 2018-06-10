@@ -1,5 +1,6 @@
 *******TODAS LAS CONTRASEÑAS SERAN ENCRIPTADAS Y DESENCRIPTADAS USANDO EL ALGORITMO BASE64********
 ++++ EL FORMATO DE LA FECHA DEBE SER YYYY/MM/DD, UN FALLO DE ESTA PATRON DARA UN ERROR DE VALIDACION++++
+
                    Registro de Usuario:
 
 URL: https://ignsw201825-snproject.herokuapp.com/user/register
@@ -13,26 +14,16 @@ Body:
     "firstName": "nombre",
     "lastName": "apellido",
     "email": "direccion de correo electrónico",
-    "password": "contraseña",
-    "confirmationPassword": "contraseña",
-    "dateOfBirth": "fecha de nacimiento"
+    "password": "contraseña", debe estar encriptada con base64
+    "confirmationPassword": "contraseña", debe estar encriptada con base64
+    "dateOfBirth": "yyyy/mm/dd"
 }
 
 Respuesta:
 
-Json con los datos del Usuario almacenado en la base de datos.
+Mensaje de success y el id del usuario creado
 
 Codigo: 200 OK
-
-Formato:
-
-{
-    "id": "ID"
-    "firstName": "nombre",
-    "lastName": "apellido",
-    "email": "direccion de correo electrónico",
-    "dateOfBirth": "fecha de nacimiento"
-}
 
 
 Errores:
@@ -54,7 +45,7 @@ Header: Content-Type--------application/json
 Body:
 {
     "email": "direccion de correo electrónico",
-    "password": "contraseña",
+    "password": "contraseña", debe estar encriptada con base64
 }
 
 Respuesta:
@@ -70,7 +61,8 @@ Formato:
     "firstName": "nombre",
     "lastName": "apellido",
     "email": "direccion de correo electrónico",
-    "dateOfBirth": "fecha de nacimiento"
+    "dateOfBirth": "fecha de nacimiento",
+    "authToken": "Token"
 }
 
 Errores:
@@ -96,13 +88,16 @@ Body:
     "firstName": "nombre",
     "lastName": "apellido",
     "email": "direccion de correo electrónico",
-    "password": "contraseña",
-    "dateOfBirth": "fecha de nacimiento"
+    "password": "contraseña", debe estar encriptada con base64
+    "dateOfBirth": "fecha de nacimiento",
+    "authToken": "token"
 }
+
+Nota: Los Datos que no se quieran modificar se deben mandar igual que como estaban
 
 Respuesta:
 
-Json con mensaje de operación exitosa.
+Json con mensaje de operación success.
 
 Codigo: 200 OK
 
@@ -131,12 +126,18 @@ Codigo: 200 OK
 Formato:
 
 {
-    "id": "ID"
-    "firstName": "nombre",
-    "lastName": "apellido",
-    "email": "direccion de correo electrónico",
-    "password": "contraseña"
-    "dateOfBirth": "fecha de nacimiento"
+    "id": "ID",
+    "firstName": "Nombre",
+    "lastName": "Apellido",
+    "email": "direccion de correo electrónico ",
+    "password": "contraseña", debe estar encriptada con base64
+    "dateOfBirth": "fecha de nacimiento",
+    "friends": [
+        lista de con los id de amigos
+    ],
+    "albums": [
+        lista con los id de albums
+    ]
 }
 
 Errores:
@@ -177,6 +178,320 @@ Formato de cada entrada en la lista:
 Errores:
 
 -No se encontraron resultados que contengan la variable name
+
+
+               LogOut
+
+URL: https://ignsw201825-snproject.herokuapp.com/user/logout
+
+Petición tipo: POST
+
+Header: Content-Type--------application/json
+
+Body:
+{
+    {
+    	"id": "ID",
+        "authToken": "token"
+    }
+}
+
+Respuesta:
+
+Mensaje de success
+
+Codigo: 200 OK
+
+
+                Agregar Amigo
+
+URL: https://ignsw201825-snproject.herokuapp.com/user/friend/add
+
+Petición tipo: POST
+
+Header: Content-Type--------application/json
+
+Body:
+{
+    "userId": "id del usuario que desea agregar amigo",
+    "authToken": "token del usuario que desea agregar amigo",
+    "friendId": "id del amigo"
+}
+
+Respuesta:
+
+Mensaje de success
+
+Codigo: 200 OK
+
+
+                Eliminar Amigo
+
+URL: https://ignsw201825-snproject.herokuapp.com/user/friend/remove
+
+Petición tipo: DELETE
+
+Header: Content-Type--------application/json
+
+Body:
+{
+    "userId": "id del usuario que desea eliminar amigo",
+    "authToken": "token del usuario que desea eliminar amigo",
+    "friendId": "id del amigo"
+}
+
+Respuesta:
+
+Mensaje de success
+
+Codigo: 200 OK
+
+
+           Obtener lista de Amigos de un determinado usuario
+
+URL: https://ignsw201825-snproject.herokuapp.com/user/friend/getLits/{id}
+
+Donde id es el id del usuario
+
+Petición tipo: GET
+
+
+Respuesta:
+
+Lista con informacion de los amigos
+
+[
+    {
+        "id": "id",
+        "firstName": "nombre",
+        "lastName": "apellido",
+        "email": "direccion de correo electrónico",
+        "dateOfBirth": "fecha de nacimiento"
+    }
+]
+
+
+
+            Agregar Album a Usuario
+
+URL: https://ignsw201825-snproject.herokuapp.com/album/add
+
+Petición tipo: POST
+
+Header: Content-Type--------application/json
+
+Body:
+{
+    "userId": "id del usuario",
+    "authToken": "token",
+    "name": "nombre del album", debe ser unico dentro de cada usuario
+    "description": "descripcion"
+}
+Respuesta:
+
+Mensaje de success
+
+Codigo: 200 OK
+
+
+            Modificar Album
+
+URL: https://ignsw201825-snproject.herokuapp.com/album/update
+
+Petición tipo: PUT
+
+Header: Content-Type--------application/json
+
+Body:
+{
+         "userId": "id del usuario",
+         "authToken": "token",
+         "albumId": "id del album que se desea modificar",
+         "name": "nombre del album", debe ser unico dentro de cada usuario
+          description": "descripcion"
+}
+Respuesta:
+
+Mensaje de success y el id del album creado
+
+Codigo: 200 OK
+
+
+                Eliminar Album
+
+URL: https://ignsw201825-snproject.herokuapp.com/album/remove
+
+Petición tipo: DELETE
+
+Header: Content-Type--------application/json
+
+Body:
+{
+    "userId": "id del usuario",
+    "authToken": "token",
+    "albumId":  "id del album que se desea eliminar"
+}
+
+Respuesta:
+
+Mensaje de success
+
+Codigo: 200 OK
+
+
+           Obtener lista de Albums de un determinado usuario
+
+URL: https://ignsw201825-snproject.herokuapp.com/album/getLits/{id}
+
+Donde id es el id del usuario
+
+Petición tipo: GET
+
+
+Respuesta:
+
+Lista con informacion de los albums
+
+[
+    {
+        "id": id de album,
+        "name": "nombre",
+        "description": "descripcion",
+        "media": [] lista de contenido multimetida(Ids)
+    }
+]
+
+
+            Obtener informacion de Album por id
+
+URL: https://ignsw201825-snproject.herokuapp.com/album/get/{id}
+
+Donde id es el id del usuario
+
+Petición tipo: GET
+
+
+Respuesta:
+
+Informacion del album
+
+    {
+        "id": id de album,
+        "name": "nombre",
+        "description": "descripcion",
+        "media": [] lista de contenido multimetida(Ids)
+    }
+
+
+            Agregar Media a Album
+
+URL: https://ignsw201825-snproject.herokuapp.com/media/add
+
+Petición tipo: POST
+
+Header: Content-Type--------application/json
+
+{
+    "userId": "id del usuario",
+    "albumId": "id del album",
+    "authToken": "token",
+    "url": "www.google.com",
+    "type": "1"  0 para instagram, 1 para youtube, 2 para soundcloud
+}
+
+Respuesta:
+
+Mensaje de success y el id de la nueva media creada
+
+Codigo: 200 OK
+
+
+            Eliminar  Media de Album
+
+URL: https://ignsw201825-snproject.herokuapp.com/media/remove
+
+Petición tipo: Delete
+
+Header: Content-Type--------application/json
+
+
+    {
+        "userId": "id del usuario",
+        "albumId": "id del album",
+        "mediaId": "id del contenido multimedia",
+        "authToken": "token"
+    }
+
+
+Respuesta:
+
+Mensaje de success
+
+Codigo: 200 OK
+
+
+            Obtener lista de Media de un determinado album
+
+URL: https://ignsw201825-snproject.herokuapp.com/media/getLits/{id}
+
+Donde id es el id del usuario
+
+Petición tipo: GET
+
+
+Respuesta:
+
+Lista con informacion de los albums
+
+[
+    {
+        "id": id de media,
+        "url": "url,
+        "tipo": tipo
+    }
+]
+
+            Obtener iformacion de Media por id
+
+URL: https://ignsw201825-snproject.herokuapp.com/media/get/{id}
+
+Donde id es el id del usuario
+
+Petición tipo: GET
+
+
+Respuesta:
+
+Lista con informacion de los albums
+
+    {
+        "id": id de media,
+        "url": "url,
+        "tipo": tipo
+    }
+
+
+        Busqueda en Instagram
+
+URL: https://ignsw201825-snproject.herokuapp.com/search/instagram?q=SEARCH_QUERY
+Donde ?q=SEARCH_QUERY es un parametro de busqueda
+
+ejemplo si se desea buscar media con el taga caracas:
+
+https://ignsw201825-snproject.herokuapp.com/search/instagram?q=caracas
+
+instagram solo deja buscar por tags, no se permiten caracateres especiales ni espacios.
+
+devueve una lista con los urls
+
+por ahora solo tengo 2 fotos en el sistema:
+estan tageadas caracas y caracasdenoche
+
+luego coloco mas.
+
+
+
+
 
 
 
