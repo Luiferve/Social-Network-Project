@@ -3,6 +3,7 @@ package ucab.ingsw.socialnetworkproject.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriUtils;
 import ucab.ingsw.socialnetworkproject.response.AlertResponse;
 import ucab.ingsw.socialnetworkproject.service.strategy.InstagramSearchStrategy;
 import ucab.ingsw.socialnetworkproject.service.SearchService;
@@ -51,6 +52,7 @@ public class SearchController {
             if (strategy.toLowerCase().equals("instagram")) {
                 searchService.setSearchStrategy(new InstagramSearchStrategy());
             }
+            searchTerm = searchTerm.replace(" ", "");
             return searchService.search(searchTerm);
         }
         else{

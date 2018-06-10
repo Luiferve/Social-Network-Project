@@ -17,8 +17,6 @@ import java.util.List;
 @Slf4j
 
 public class InstagramSearchStrategy implements SearchStrategy {
-    @Autowired
-    private Builder builder;
 
     public static final String AUTH_TOKEN = "705751369.9ec8a89.ee214d6054f9473bb022043178680802";
 
@@ -31,7 +29,6 @@ public class InstagramSearchStrategy implements SearchStrategy {
 
     public ResponseEntity<Object> seeker(String searchTerm){
         String searchUrl = "https://api.instagram.com/v1/tags/"+searchTerm+"/media/recent?access_token="+AUTH_TOKEN;
-        searchTerm = searchTerm.replace(" ", "");
         List<String> urlList = new ArrayList<>();
         List<InstaData> instaData;
         RestTemplate restTemplate = new RestTemplate();
