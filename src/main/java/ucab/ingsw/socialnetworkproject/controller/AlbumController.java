@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import ucab.ingsw.socialnetworkproject.command.UserNewAlbumCommand;
 
 import ucab.ingsw.socialnetworkproject.command.UserRemoveAlbumCommand;
+import ucab.ingsw.socialnetworkproject.command.UserUpdateAlbumCommand;
 import ucab.ingsw.socialnetworkproject.service.AlbumService;
 
 import javax.validation.Valid;
@@ -24,6 +25,11 @@ public class AlbumController {
     @RequestMapping(value = "/add", consumes = "application/json", method = RequestMethod.POST)
     public ResponseEntity register(@Valid @RequestBody UserNewAlbumCommand command) {
         return albumService.addAlbum(command);
+    }
+
+    @RequestMapping(value = "/update", consumes = "application/json", method = RequestMethod.PUT)
+    public ResponseEntity register(@Valid @RequestBody UserUpdateAlbumCommand command) {
+        return albumService.updateAlbum(command);
     }
 
     @RequestMapping(value = "/get/{id}", method = RequestMethod.GET)

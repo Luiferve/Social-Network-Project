@@ -6,15 +6,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import ucab.ingsw.socialnetworkproject.command.UserNewAlbumCommand;
 import ucab.ingsw.socialnetworkproject.command.UserRemoveAlbumCommand;
+import ucab.ingsw.socialnetworkproject.command.UserUpdateAlbumCommand;
 import ucab.ingsw.socialnetworkproject.model.Album;
 import ucab.ingsw.socialnetworkproject.model.User;
 import ucab.ingsw.socialnetworkproject.repository.AlbumRepository;
 import ucab.ingsw.socialnetworkproject.repository.MediaRepository;
 import ucab.ingsw.socialnetworkproject.repository.UserRepository;
-import ucab.ingsw.socialnetworkproject.response.AlertResponse;
 import ucab.ingsw.socialnetworkproject.response.UserAlbumResponse;
+import ucab.ingsw.socialnetworkproject.service.validation.DataValidation;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,10 +30,16 @@ public class AlbumService {
     private UserRepository userRepository;
 
     @Autowired
+    private MediaRepository mediaRepository;
+
+    @Autowired
     private UserService userService;
 
     @Autowired
-    private MediaRepository mediaRepository;
+    private DataValidation dataValidation;
+
+    @Autowired
+    private Builder builder;
 
 
     private Album buildNewAlbum (UserNewAlbumCommand command){
@@ -45,13 +51,14 @@ public class AlbumService {
         return album;
     }
 
-    private AlertResponse buildAlertResponse(String message){ //crea un mensaje de alerta para ser transmitido al cliente
-        AlertResponse response = new AlertResponse();
-        response.setMessage(message);
-        response.setTimestamp(LocalDateTime.now());
-        return response;
+    private Album buildExistingAlbum(UserUpdateAlbumCommand command){
+        Album album = new Album();
+        album.setUser_id(Long.parseLong(command.getUserId()));
+        album.setId(Long.parseLong(command.getAlbumId()));
+        album.setName(command.getName());
+        album.setDescription(command.getDescription());
+        return album;
     }
-
 
     public List<UserAlbumResponse> createAlbumList(User user){
         List<UserAlbumResponse> albumList = new ArrayList<>();
@@ -71,23 +78,15 @@ public class AlbumService {
 
     public ResponseEntity<Object> addAlbum(UserNewAlbumCommand command){
         User user = userService.searchUserById(command.getUserId());
-        if(user == null){
-            log.info("Cannot find user with name={}", command.getUserId());
-
-            return ResponseEntity.badRequest().body(buildAlertResponse("invalid_user_Id."));
-        }
-        else if((!(command.getAuthToken().equals(user.getAuthToken()))) || (command.getAuthToken().equals("0"))) {
-            log.error("Wrong authentication token");
-
-            return ResponseEntity.badRequest().body(buildAlertResponse("unauthenticated_user."));
+        if(!(dataValidation.validateAddAlbum(user, command.getUserId(), command))){
+            return dataValidation.getResponseEntity();
         }
         else{
             List<UserAlbumResponse> albumList = createAlbumList(user);
             List<Long> albumIdList = user.getAlbums();
-            if(albumList.stream().anyMatch(i -> i.getName().equals(command.getName()))){
+            if(dataValidation.checkAlbumName(albumList, albumIdList, command.getName())){
                 log.info("Album name ={} already on list", command.getName());
-
-                return ResponseEntity.badRequest().body(buildAlertResponse("album_name_already_used"));
+                return dataValidation.getResponseEntity();
             }
             else{
                 Album album = buildNewAlbum(command);
@@ -97,37 +96,43 @@ public class AlbumService {
                     user.setAlbums(albumIdList);
                     userRepository.save(user);
                     albumRepository.save(album);
-                    return ResponseEntity.ok().body(buildAlertResponse("success"));
+                    return ResponseEntity.ok().body(builder.buildAlertResponse("success"));
                 }
                 else{
                     log.error("Error adding album ={} to user ={} album list", album.getId(), user.getId());
-                    return ResponseEntity.badRequest().body(buildAlertResponse("error_adding_album"));
+                    return ResponseEntity.badRequest().body(builder.buildAlertResponse("error_adding_album"));
                 }
+            }
+        }
+    }
+
+    public ResponseEntity<Object> updateAlbum(UserUpdateAlbumCommand command){
+        User user = userService.searchUserById(command.getUserId());
+        if(!(dataValidation.validateUpdateAlbum(user, command.getUserId(), command))){
+            return dataValidation.getResponseEntity();
+        }
+        else{
+            Album oldAlbum = albumRepository.findById(Long.parseLong(command.getAlbumId())).get();
+            List<UserAlbumResponse> albumList = createAlbumList(user);
+            List<Long> albumIdList = user.getAlbums();
+            if((dataValidation.checkAlbumName(albumList, albumIdList, command.getName())) && !(command.getName().toLowerCase().equals(oldAlbum.getName().toLowerCase()))){
+                log.info("Album name ={} already on list", command.getName());
+                return dataValidation.getResponseEntity();
+            }
+            else{
+                Album album = buildExistingAlbum(command);
+                album.setMedia(oldAlbum.getMedia());
+                albumRepository.save(album);
+                log.info("Updated album with ID={}", oldAlbum.getId());
+                return ResponseEntity.ok().body(builder.buildAlertResponse("success"));
             }
         }
     }
 
     public ResponseEntity<Object> removeAlbum(UserRemoveAlbumCommand command){
         User user = userService.searchUserById(command.getUserId());
-        if(user == null){
-            log.info("Cannot find user with name={}", command.getUserId());
-
-            return ResponseEntity.badRequest().body(buildAlertResponse("invalid_user_Id."));
-        }
-        else if((!(command.getAuthToken().equals(user.getAuthToken()))) || (command.getAuthToken().equals("0"))) {
-            log.error("unauthenticated_user.");
-
-            return ResponseEntity.badRequest().body(buildAlertResponse("unauthenticated_user."));
-        }
-        else if(!(albumRepository.existsById(Long.parseLong(command.getAlbumId())))){
-            log.info("Cannot find album with id={}", command.getAlbumId());
-
-            return ResponseEntity.badRequest().body(buildAlertResponse("invalid_album_Id."));
-        }
-        else if(!(user.getAlbums().stream().anyMatch(i-> i == Long.parseLong(command.getAlbumId())))){
-            log.info("Album id ={} is not on user ={} album list", command.getAlbumId(), command.getUserId());
-
-            return ResponseEntity.badRequest().body(buildAlertResponse("album_id_not_on_list"));
+        if(!(dataValidation.validateRemoveAlbum(user, command.getUserId(), command))){
+            return dataValidation.getResponseEntity();
         }
         else{
             Album album = albumRepository.findById(Long.parseLong(command.getAlbumId())).get();
@@ -140,20 +145,18 @@ public class AlbumService {
 
                 userRepository.save(user);
                 albumRepository.deleteById(Long.parseLong(command.getAlbumId()));
-                return ResponseEntity.ok().body(buildAlertResponse("success"));
+                return ResponseEntity.ok().body(builder.buildAlertResponse("success"));
             }
             else{
                 log.error("Error removing album ={} from user ={} album list", command.getAlbumId(), user.getId());
-                return ResponseEntity.badRequest().body(buildAlertResponse("error_removing_album"));
+                return ResponseEntity.badRequest().body(builder.buildAlertResponse("error_removing_album"));
             }
         }
     }
 
     public ResponseEntity<Object> getAlbumById(String id){
-        if(!(albumRepository.existsById(Long.parseLong(id)))){
-            log.info("Cannot find album with id={}", id);
-
-            return ResponseEntity.badRequest().body(buildAlertResponse("invalid_album_Id."));
+        if(!(dataValidation.validateAlbumId(id))){
+            return ResponseEntity.badRequest().body(builder.buildAlertResponse("invalid_album_id"));
         }
         else {
             Album album = albumRepository.findById(Long.parseLong(id)).get();
@@ -170,17 +173,17 @@ public class AlbumService {
 
     public ResponseEntity<Object> getAlbumList(String id){
         User user = userService.searchUserById(id);
-        if(user == null){
-            log.info("Cannot find user with id={}", id);
+        if (!(dataValidation.validateUserId(user, id))) {
+            log.info("Cannot find user with ID={}", id);
 
-            return ResponseEntity.badRequest().body(buildAlertResponse("invalid_user_Id."));
+            return ResponseEntity.badRequest().body(builder.buildAlertResponse("invalid_Id."));
         }
         else {
             List<UserAlbumResponse> albumList = createAlbumList(user);
             if(albumList.isEmpty()){
                 log.info("User ={} album list is empty", id);
 
-                return ResponseEntity.ok().body(buildAlertResponse("empty_album_list"));
+                return ResponseEntity.ok().body(builder.buildAlertResponse("empty_album_list"));
             }
             else {
                 log.info("Returning album list for user id={}", id);
