@@ -4,11 +4,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
-import ucab.ingsw.socialnetworkproject.response.SearchResponse.InstaVideoResponse;
+import ucab.ingsw.socialnetworkproject.response.searchResponse.InstaVideoResponse;
 import ucab.ingsw.socialnetworkproject.service.Builder;
 import ucab.ingsw.socialnetworkproject.service.dataContainer.instagram.InstaData;
 import ucab.ingsw.socialnetworkproject.service.dataContainer.instagram.InstagramUrl;
-import ucab.ingsw.socialnetworkproject.response.SearchResponse.InstaResponse;
+import ucab.ingsw.socialnetworkproject.response.searchResponse.InstaResponse;
 import java.util.ArrayList;
 import java.util.List;
 
