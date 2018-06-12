@@ -7,7 +7,7 @@ import org.springframework.web.client.RestTemplate;
 import ucab.ingsw.socialnetworkproject.response.searchResponse.InstaVideoResponse;
 import ucab.ingsw.socialnetworkproject.service.Builder;
 import ucab.ingsw.socialnetworkproject.service.dataContainer.instagram.InstaData;
-import ucab.ingsw.socialnetworkproject.service.dataContainer.instagram.InstagramUrl;
+import ucab.ingsw.socialnetworkproject.service.dataContainer.instagram.InstagramContainer;
 import ucab.ingsw.socialnetworkproject.response.searchResponse.InstaResponse;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,8 +44,8 @@ public class InstagramSearchStrategy implements SearchStrategy {
     public ResponseEntity<Object> seeker(String searchTerm){
         String searchUrl = "https://api.instagram.com/v1/tags/"+searchTerm+"/media/recent?access_token="+AUTH_TOKEN;
         RestTemplate restTemplate = new RestTemplate();
-        InstagramUrl instagramUrl = restTemplate.getForObject(searchUrl, InstagramUrl.class);
-        if(instagramUrl.getData().isEmpty()){
+        InstagramContainer instagramResponse = restTemplate.getForObject(searchUrl, InstagramContainer.class);
+        if(instagramResponse.getData().isEmpty()){
             log.info("No result for search term ={}", searchTerm);
 
             return ResponseEntity.badRequest().body(builder.buildAlertResponse("no_result."));
@@ -53,7 +53,7 @@ public class InstagramSearchStrategy implements SearchStrategy {
         else {
             log.info("Returning results for search term ={}", searchTerm);
 
-            return ResponseEntity.ok(buildResponse(instagramUrl.getData()));
+            return ResponseEntity.ok(buildResponse(instagramResponse.getData()));
         }
     }
 }

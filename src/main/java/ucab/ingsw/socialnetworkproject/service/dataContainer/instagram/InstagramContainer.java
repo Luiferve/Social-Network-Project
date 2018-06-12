@@ -10,6 +10,6 @@ import java.util.List;
 @Data
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class InstagramUrl implements Serializable {
+public class InstagramContainer implements Serializable {
     private List<InstaData> data;
 }
