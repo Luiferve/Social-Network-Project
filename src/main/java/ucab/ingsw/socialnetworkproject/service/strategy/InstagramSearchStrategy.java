@@ -33,7 +33,7 @@ public class InstagramSearchStrategy implements SearchStrategy {
                 ((InstaVideoResponse) instaResponse).setVideoUrl(i.getVideos().getStandard_resolution().getUrl());
             }
             instaResponse.setImageUrl(i.getImages().getStandard_resolution().getUrl());
-            instaResponse.setTags(i.getTags());
+            //instaResponse.setTags(i.getTags());
             instaResponse.setInstagramLink(i.getLink());
             instaResponse.setType(i.getType());
             instaResponseList.add(instaResponse);

@@ -12,7 +12,7 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class InstaData implements Serializable {
     private Images images;
-    private List<String> tags;
+    //private List<String> tags;
     private String link;
     private String type;
     private Videos videos;

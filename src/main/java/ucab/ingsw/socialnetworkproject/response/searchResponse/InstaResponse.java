@@ -10,6 +10,6 @@ import java.util.List;
 public class InstaResponse {
     private String type;
     private String imageUrl;
-    private List<String> tags;
+    //private List<String> tags;
     private String instagramLink;
 }
