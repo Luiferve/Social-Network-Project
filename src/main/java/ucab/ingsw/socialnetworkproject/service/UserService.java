@@ -226,7 +226,7 @@ public class UserService {
         if(response.isEmpty()){
             log.info("Cannot find user with name={}", search);
 
-            return ResponseEntity.badRequest().body(builder.buildAlertResponse("No result found"));
+            return ResponseEntity.badRequest().body(builder.buildAlertResponse("no_result_found"));
         }
         else {
             log.info("Returning info for user with name={}", search);
