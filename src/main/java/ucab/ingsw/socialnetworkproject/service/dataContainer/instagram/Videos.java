@@ -5,15 +5,10 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
-import java.util.List;
 
 @Data
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class InstaData implements Serializable {
-    private Images images;
-    private List<String> tags;
-    private String link;
-    private String type;
-    private Videos videos;
+public class Videos implements Serializable {
+    private Resolution standard_resolution;
 }
