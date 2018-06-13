@@ -26,9 +26,9 @@ public class InstagramSearchStrategy implements SearchStrategy {
                 instaResponse = new InstaResponse();
             else {
                 instaResponse = new InstaVideoResponse();
-                ((InstaVideoResponse) instaResponse).setVideoUrl(i.getVideos().getStandard_resolution().getUrl());
+                ((InstaVideoResponse) instaResponse).setVideoUrl(i.getVideo().getStandard_resolution().getUrl());
             }
-            instaResponse.setImageUrl(i.getImages().getStandard_resolution().getUrl());
+            instaResponse.setImageUrl(i.getImage().getStandard_resolution().getUrl());
             instaResponse.setInstagramLink(i.getLink());
             instaResponse.setType(i.getType());
             instaResponseList.add(instaResponse);

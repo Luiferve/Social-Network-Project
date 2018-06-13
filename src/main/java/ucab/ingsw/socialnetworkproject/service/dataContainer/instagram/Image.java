@@ -9,6 +9,6 @@ import java.io.Serializable;
 @Data
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Videos implements Serializable {
+public class Image implements Serializable {
     private Resolution standard_resolution;
 }
