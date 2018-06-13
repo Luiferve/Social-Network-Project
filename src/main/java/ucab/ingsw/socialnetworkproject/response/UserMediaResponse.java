@@ -7,6 +7,7 @@ import lombok.ToString;
 @ToString
 public class UserMediaResponse {
     private long id;
+    private  String type;
     private String url;
-    private int type;
+    private String link;
 }

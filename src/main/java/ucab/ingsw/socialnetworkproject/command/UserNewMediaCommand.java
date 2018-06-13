@@ -1,6 +1,7 @@
 package ucab.ingsw.socialnetworkproject.command;
 
 
+import com.sun.istack.internal.Nullable;
 import lombok.Data;
 import lombok.ToString;
 
@@ -11,6 +12,10 @@ import java.io.Serializable;
 @ToString
 @Data
 public class UserNewMediaCommand implements Serializable {
+
+    @NotNull(message = "Se requiere tipo.")
+    @NotEmpty(message = "Se requiere tipo.")
+    private String type;
 
     @NotNull(message = "Se requiere id de usuario.")
     @NotEmpty(message = "Se requiere id de usuario.")
@@ -29,6 +34,10 @@ public class UserNewMediaCommand implements Serializable {
     @NotEmpty(message = "Se requiere url.")
     private String url;
 
+    @NotNull(message = "Se requiere enlace.")
+    @NotEmpty(message = "Se requiere enlace.")
+    private String link;
 
-    private int type;
+    private String videoUrl;
+
 }

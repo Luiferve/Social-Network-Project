@@ -14,7 +14,9 @@ import ucab.ingsw.socialnetworkproject.repository.UserRepository;
 import ucab.ingsw.socialnetworkproject.response.UserAlbumResponse;
 import ucab.ingsw.socialnetworkproject.service.Builder;
 
+import java.lang.reflect.Field;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 
@@ -362,6 +364,10 @@ public class DataValidation {
         }
 
         else return true;
+    }
+
+    public boolean validateMissingVideoUrl(UserNewMediaCommand command) {
+        return ((command.getVideoUrl() == null) || (command.getVideoUrl().equals("")) || (command.getVideoUrl().equals(" ")));
     }
 
     public boolean validateAddMedia(User user, String id, UserNewMediaCommand command){

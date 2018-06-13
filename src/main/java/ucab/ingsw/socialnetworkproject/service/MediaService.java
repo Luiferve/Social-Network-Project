@@ -9,14 +9,19 @@ import ucab.ingsw.socialnetworkproject.command.UserRemoveMediaCommand;
 import ucab.ingsw.socialnetworkproject.model.Album;
 import ucab.ingsw.socialnetworkproject.model.Media;
 import ucab.ingsw.socialnetworkproject.model.User;
+import ucab.ingsw.socialnetworkproject.model.VideoMedia;
 import ucab.ingsw.socialnetworkproject.repository.AlbumRepository;
 import ucab.ingsw.socialnetworkproject.repository.MediaRepository;
-import ucab.ingsw.socialnetworkproject.response.AlertResponse;
 import ucab.ingsw.socialnetworkproject.response.UserMediaResponse;
+import ucab.ingsw.socialnetworkproject.response.UserVideoMediaResponse;
+import ucab.ingsw.socialnetworkproject.response.searchResponse.InstaResponse;
+import ucab.ingsw.socialnetworkproject.response.searchResponse.InstaVideoResponse;
 import ucab.ingsw.socialnetworkproject.service.validation.DataValidation;
 
-import java.time.LocalDateTime;
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
@@ -40,12 +45,46 @@ public class MediaService {
     private Builder builder;
 
     private Media buildNewMedia(UserNewMediaCommand command){
-        Media media = new Media();
+        Media media;
+        if(command.getType().equals("video")){
+            if(dataValidation.validateMissingVideoUrl(command)) {
+                log.info("Missing video url");
+                return null;
+            }
+            else {
+                media = new VideoMedia();
+                ((VideoMedia) media).setVideoUrl(command.getVideoUrl());
+            }
+        }
+        else
+            media = new Media();
         media.setId(System.currentTimeMillis());
         media.setAlbumId(Long.parseLong(command.getAlbumId()));
         media.setUrl(command.getUrl());
-        media.setType(command.getType());
+        media.setType(command.getType().toLowerCase());
+        media.setLink(command.getLink());
         return media;
+    }
+
+    private UserMediaResponse buildResponse(Media media){
+        UserMediaResponse mediaResponse;
+        if(media.getType().equals("image")) {
+            mediaResponse = new UserMediaResponse();
+            mediaResponse.setId(media.getId());
+            mediaResponse.setUrl(media.getUrl());
+            mediaResponse.setType(media.getType());
+            mediaResponse.setLink(media.getLink());
+        }
+        else{
+            mediaResponse = new UserVideoMediaResponse();
+            VideoMedia videoMedia = (VideoMedia) media;
+            mediaResponse.setId(videoMedia.getId());
+            mediaResponse.setUrl(videoMedia.getUrl());
+            mediaResponse.setType(videoMedia.getType());
+            mediaResponse.setLink(videoMedia.getLink());
+            ((UserVideoMediaResponse) mediaResponse).setVideoUrl(videoMedia.getVideoUrl());
+        }
+        return mediaResponse;
     }
 
 
@@ -54,11 +93,11 @@ public class MediaService {
         List<Long> mediaIdList = album.getMedia();
         mediaRepository.findAll().forEach(it->{
             if(mediaIdList.stream().anyMatch(item->item == it.getId())){
-                UserMediaResponse mediaResponse = new UserMediaResponse();
+               /* UserMediaResponse mediaResponse = new UserMediaResponse();
                 mediaResponse.setId(it.getId());
                 mediaResponse.setUrl(it.getUrl());
-                mediaResponse.setType(it.getType());
-                mediaList.add(mediaResponse);
+                mediaResponse.setType(it.getType());*/
+                mediaList.add(buildResponse(it));
             }
         });
         return mediaList;
@@ -68,23 +107,26 @@ public class MediaService {
         User user = userService.searchUserById(command.getUserId());
         if(!(dataValidation.validateAddMedia(user, command.getUserId(), command))){
             return dataValidation.getResponseEntity();
-
         }
         else{
             Media media = buildNewMedia(command);
-            Album album = albumRepository.findById(Long.parseLong(command.getAlbumId())).get();
-            boolean result = album.getMedia().add(media.getId());
-            if(result ) {
-                log.info("Meida ={} added to album ={} media list", album.getId(), user.getId());
+            if(media == null)
+                return ResponseEntity.badRequest().body(builder.buildAlertResponse("missing_video_url"));
+            else {
 
-                albumRepository.save(album);
-                mediaRepository.save(media);
+                Album album = albumRepository.findById(Long.parseLong(command.getAlbumId())).get();
+                boolean result = album.getMedia().add(media.getId());
+                if (result) {
+                    log.info("Media ={} added to album ={} media list", album.getId(), user.getId());
 
-                return ResponseEntity.ok().body(builder.buildSuccessResponse("success", String.valueOf(media.getId())));
-            }
-            else{
-                log.error("Error adding media ={} to album ={} media list", album.getId(), user.getId());
-                return ResponseEntity.badRequest().body(builder.buildAlertResponse("error_adding_media"));
+                    albumRepository.save(album);
+                    mediaRepository.save(media);
+
+                    return ResponseEntity.ok().body(builder.buildSuccessResponse("success", String.valueOf(media.getId())));
+                } else {
+                    log.error("Error adding media ={} to album ={} media list", album.getId(), user.getId());
+                    return ResponseEntity.badRequest().body(builder.buildAlertResponse("error_adding_media"));
+                }
             }
         }
     }
@@ -122,13 +164,27 @@ public class MediaService {
         }
         else{
             Media media = mediaRepository.findById(Long.parseLong(id)).get();
-            UserMediaResponse mediaResponse = new UserMediaResponse();
-            mediaResponse.setId(media.getId());
-            mediaResponse.setUrl(media.getUrl());
-            mediaResponse.setType(media.getType());
+             /*UserMediaResponse mediaResponse;
+            if(media.getType().equals("image")) {
+                mediaResponse = new UserMediaResponse();
+                mediaResponse.setId(media.getId());
+                mediaResponse.setUrl(media.getUrl());
+                mediaResponse.setType(media.getType());
+                mediaResponse.setLink(media.getLink());
+            }
+            else{
+                mediaResponse = new UserVideoMediaResponse();
+                VideoMedia videoMedia = (VideoMedia) media;
+                mediaResponse.setId(videoMedia.getId());
+                mediaResponse.setUrl(videoMedia.getUrl());
+                mediaResponse.setType(videoMedia.getType());
+                mediaResponse.setLink(videoMedia.getLink());
+                ((UserVideoMediaResponse) mediaResponse).setVideoUrl(videoMedia.getVideoUrl());
+            }*/
+
             log.info("Returning media info for media id={}", id);
 
-            return ResponseEntity.ok(mediaResponse);
+            return ResponseEntity.ok(buildResponse(media));
         }
     }
 

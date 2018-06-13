@@ -14,8 +14,8 @@ import java.time.LocalDate;
 public class Media  implements Serializable {
     @Id
     private long id;
-
-    private String url;
     private long albumId;
-    private int type; //0=instagram 1=youtube 2=soundcloud
+    private String url;
+    private String link;
+    private String type;
 }
