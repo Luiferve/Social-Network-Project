@@ -9,8 +9,8 @@ import java.io.Serializable;
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class InstaData implements Serializable {
-    private Image image;
+    private Image images;
     private String link;
     private String type;
-    private Video video;
+    private Video videos;
 }
