@@ -1,7 +1,6 @@
 package ucab.ingsw.socialnetworkproject.command;
 
 
-import com.sun.istack.internal.Nullable;
 import lombok.Data;
 import lombok.ToString;
 
