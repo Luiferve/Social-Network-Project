@@ -434,7 +434,7 @@ Codigo: 200 OK
 
             Obtener lista de Media de un determinado album
 
-URL: https://ignsw201825-snproject.herokuapp.com/media/getLits/{id}
+URL: https://ignsw201825-snproject.herokuapp.com/media/getList/{id}
 
 Donde id es el id del usuario
 
