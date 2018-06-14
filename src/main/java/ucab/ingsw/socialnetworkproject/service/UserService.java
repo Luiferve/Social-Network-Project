@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import ucab.ingsw.socialnetworkproject.command.*;
+import ucab.ingsw.socialnetworkproject.response.MessageConstants;
 import ucab.ingsw.socialnetworkproject.response.UserLogInResponse;
 import ucab.ingsw.socialnetworkproject.model.User;
 import ucab.ingsw.socialnetworkproject.repository.UserRepository;
@@ -112,7 +113,7 @@ public class UserService {
 
             log.info("Registered user with ID={}", user.getId());
 
-            return ResponseEntity.ok().body(builder.buildSuccessResponse("success", String.valueOf(user.getId())));
+            return ResponseEntity.ok().body(builder.buildSuccessResponse(MessageConstants.SUCCESS, String.valueOf(user.getId())));
         }
     }
 
@@ -182,7 +183,7 @@ public class UserService {
         if (!(dataValidation.validateUserId(user, id))) {
             log.info("Cannot find user with ID={}", id);
 
-            return ResponseEntity.badRequest().body(builder.buildAlertResponse("invalid_Id."));
+            return ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID__ID));
         }
         else {
             UserProfileResponse userProfileResponse = new UserProfileResponse();
@@ -203,11 +204,11 @@ public class UserService {
     public ArrayList<UserNormalResponse> searchUsersByName(String search){
         log.debug("About to process search for name [{}]", search);
         ArrayList<UserNormalResponse> response = new ArrayList<>();
-        userRepository.findAll().forEach(it->{ //Para cada usuario registrado en la base de datos
+        userRepository.findAll().forEach(it->{
             String name = it.getFirstName();
             String lastName = it.getLastName();
-            String fullName = name.concat(lastName); // se combina su nombre y apellido
-            if(fullName.toLowerCase().contains(search.toLowerCase())) { //Se verifica si la combinacion nombre completo contiene a la variable de busqueda
+            String fullName = name.concat(lastName);
+            if(fullName.toLowerCase().contains(search.toLowerCase())) {
                 UserNormalResponse userNormalResponse = new UserNormalResponse();
                 userNormalResponse.setFirstName(it.getFirstName());
                 userNormalResponse.setLastName(it.getLastName());
@@ -215,7 +216,7 @@ public class UserService {
                 userNormalResponse.setId(it.getId());
                 userNormalResponse.setDateOfBirth(it.getDateOfBirth());
 
-                response.add(userNormalResponse); //Se agrega respuesta a la lista
+                response.add(userNormalResponse);
             }
         });
         return response;
@@ -226,7 +227,7 @@ public class UserService {
         if(response.isEmpty()){
             log.info("Cannot find user with name={}", search);
 
-            return ResponseEntity.badRequest().body(builder.buildAlertResponse("no_result_found"));
+            return ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.NO_RESULT));
         }
         else {
             log.info("Returning info for user with name={}", search);
@@ -253,11 +254,11 @@ public class UserService {
                    log.info("Friend ={} added to user ={} friends list", friendId, user.getId());
                    user.setFriends(friends);
                    userRepository.save(user);
-                   return ResponseEntity.ok().body(builder.buildAlertResponse("success"));
+                   return ResponseEntity.ok().body(builder.buildAlertResponse(MessageConstants.SUCCESS));
                }
                else {
                        log.error("Error adding friend ={} to user ={} friends list", friendId, user.getId());
-                       return ResponseEntity.badRequest().body(builder.buildAlertResponse("error_adding_friend"));
+                       return ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.ERROR_ADDING_TO_LIST));
                }
            }
        }
@@ -281,7 +282,7 @@ public class UserService {
             }
             else {
                 log.error("Error removing friend ={} from user ={} friends list", friendId, user.getId());
-                return ResponseEntity.badRequest().body(builder.buildAlertResponse("error_adding_friend"));
+                return ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.ERROR_REMOVING_FROM_LIST));
             }
         }
     }
@@ -291,14 +292,14 @@ public class UserService {
         if (!(dataValidation.validateUserId(user, id))) {
             log.info("Cannot find user with ID={}", id);
 
-            return ResponseEntity.badRequest().body(builder.buildAlertResponse("invalid_Id."));
+            return ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID__ID));
         }
         else{
             List<UserNormalResponse> friendList = createFriendList(user);
             if(friendList.isEmpty()){
                 log.info("User ={} friend list is empty", id);
 
-                return ResponseEntity.ok().body(builder.buildAlertResponse("empty_friend_list"));
+                return ResponseEntity.ok().body(builder.buildAlertResponse(MessageConstants.EMPTY_LIST));
             }
             else{
                 log.info("Returning friend list for user id={}", id);

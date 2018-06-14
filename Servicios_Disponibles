@@ -373,7 +373,7 @@ Petición tipo: GET
 
 Respuesta:
 
-Informacion del album
+Información del album
 
     {
         "id": id de album,
@@ -395,8 +395,10 @@ Header: Content-Type--------application/json
     "userId": "id del usuario",
     "albumId": "id del album",
     "authToken": "token",
-    "url": "www.google.com",
-    "type": "1"  0 para instagram, 1 para youtube, 2 para soundcloud
+    "url": "url de media",
+    "link": "enlace a la pagina",
+    "type": "tipo"  puede ser: "image", "video", "audio"
+    "videoUrl": "url del video" solo si el elmento es video, para cualquier otro caso este atributo no se coloca
 }
 
 Respuesta:
@@ -441,14 +443,16 @@ Petición tipo: GET
 
 Respuesta:
 
-Lista con informacion de los albums
+Lista con informacion media de  un  albums
 
 [
-    {
-        "id": id de media,
+     {
+        "id": "id de media",
+        "type": "tipo"
         "url": "url,
-        "tipo": tipo
-    }
+        "link": "enlace a la pagina",
+        "videoUrl": "solo cuando es un video"
+     }
 ]
 
             Obtener iformacion de Media por id
@@ -462,12 +466,14 @@ Petición tipo: GET
 
 Respuesta:
 
-Lista con informacion de los albums
+Lista con informacion del elemento media
 
     {
-        "id": id de media,
+        "id": "id de media",
+        "type": "tipo"
         "url": "url,
-        "tipo": tipo
+        "link": "enlace a la pagina",
+        "videoUrl": "solo cuando es un video"
     }
 
 
@@ -483,15 +489,6 @@ https://ignsw201825-snproject.herokuapp.com/search/instagram?q=caracas
 instagram solo deja buscar por tags, no se permiten caracateres especiales ni espacios.
 
 devueve una lista con los urls
-
-por ahora solo tengo 2 fotos en el sistema:
-estan tageadas caracas y caracasdenoche
-
-luego coloco mas.
-
-
-
-
 
 
 

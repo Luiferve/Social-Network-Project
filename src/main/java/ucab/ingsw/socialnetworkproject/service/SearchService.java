@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import ucab.ingsw.socialnetworkproject.response.MessageConstants;
 import ucab.ingsw.socialnetworkproject.service.strategy.SearchStrategy;
 
 @Slf4j
@@ -25,6 +26,6 @@ public class SearchService {
             return  strategy.seeker(searchTerm);
         else
             log.info("Search term ={} contains invalid characters", searchTerm);
-            return ResponseEntity.badRequest().body(builder.buildAlertResponse("invalid_characters_in_search_term"));
+            return ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID_SEARCH_TERM));
     }
 }

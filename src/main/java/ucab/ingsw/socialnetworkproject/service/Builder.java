@@ -9,14 +9,14 @@ import java.time.LocalDateTime;
 @Component
 public class Builder {
 
-    public AlertResponse buildAlertResponse(String message){ //crea un mensaje de alerta para ser transmitido al cliente
+    public AlertResponse buildAlertResponse(String message){
         AlertResponse response = new AlertResponse();
         response.setMessage(message);
         response.setTimestamp(LocalDateTime.now());
         return response;
     }
 
-    public SuccessResponse buildSuccessResponse(String message, String id){ //crea un mensaje de alerta para ser transmitido al cliente
+    public SuccessResponse buildSuccessResponse(String message, String id){
         SuccessResponse response = new SuccessResponse();
         response.setMessage(message);
         response.setTimestamp(LocalDateTime.now());

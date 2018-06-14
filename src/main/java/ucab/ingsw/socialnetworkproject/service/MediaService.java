@@ -46,7 +46,7 @@ public class MediaService {
 
     private Media buildNewMedia(UserNewMediaCommand command){
         Media media;
-        if(command.getType().equals("video")){
+        if(command.getType().equals(DataValidation.MEDIA_TYPE_VIDEO)){
             if(dataValidation.validateMissingVideoUrl(command)) {
                 log.info("Missing video url");
                 return null;
@@ -68,7 +68,7 @@ public class MediaService {
 
     private UserMediaResponse buildResponse(Media media){
         UserMediaResponse mediaResponse;
-        if(media.getType().equals("image")) {
+        if(media.getType().equals(DataValidation.MEDIA_TYPE_IMAGE)) {
             mediaResponse = new UserMediaResponse();
             mediaResponse.setId(media.getId());
             mediaResponse.setUrl(media.getUrl());

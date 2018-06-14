@@ -12,6 +12,7 @@ import ucab.ingsw.socialnetworkproject.model.User;
 import ucab.ingsw.socialnetworkproject.repository.AlbumRepository;
 import ucab.ingsw.socialnetworkproject.repository.MediaRepository;
 import ucab.ingsw.socialnetworkproject.repository.UserRepository;
+import ucab.ingsw.socialnetworkproject.response.MessageConstants;
 import ucab.ingsw.socialnetworkproject.response.UserAlbumResponse;
 import ucab.ingsw.socialnetworkproject.service.validation.DataValidation;
 
@@ -96,11 +97,11 @@ public class AlbumService {
                     user.setAlbums(albumIdList);
                     userRepository.save(user);
                     albumRepository.save(album);
-                    return ResponseEntity.ok().body(builder.buildSuccessResponse("success", String.valueOf(album.getId())));
+                    return ResponseEntity.ok().body(builder.buildSuccessResponse(MessageConstants.SUCCESS, String.valueOf(album.getId())));
                 }
                 else{
                     log.error("Error adding album ={} to user ={} album list", album.getId(), user.getId());
-                    return ResponseEntity.badRequest().body(builder.buildAlertResponse("error_adding_album"));
+                    return ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.ERROR_ADDING_TO_LIST));
                 }
             }
         }
@@ -124,7 +125,7 @@ public class AlbumService {
                 album.setMedia(oldAlbum.getMedia());
                 albumRepository.save(album);
                 log.info("Updated album with ID={}", oldAlbum.getId());
-                return ResponseEntity.ok().body(builder.buildAlertResponse("success"));
+                return ResponseEntity.ok().body(builder.buildAlertResponse(MessageConstants.SUCCESS));
             }
         }
     }
@@ -145,18 +146,18 @@ public class AlbumService {
 
                 userRepository.save(user);
                 albumRepository.deleteById(Long.parseLong(command.getAlbumId()));
-                return ResponseEntity.ok().body(builder.buildAlertResponse("success"));
+                return ResponseEntity.ok().body(builder.buildAlertResponse(MessageConstants.SUCCESS));
             }
             else{
                 log.error("Error removing album ={} from user ={} album list", command.getAlbumId(), user.getId());
-                return ResponseEntity.badRequest().body(builder.buildAlertResponse("error_removing_album"));
+                return ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.ERROR_REMOVING_FROM_LIST));
             }
         }
     }
 
     public ResponseEntity<Object> getAlbumById(String id){
         if(!(dataValidation.validateAlbumId(id))){
-            return ResponseEntity.badRequest().body(builder.buildAlertResponse("invalid_album_id"));
+            return ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID_ALBUM_ID));
         }
         else {
             Album album = albumRepository.findById(Long.parseLong(id)).get();
@@ -176,14 +177,14 @@ public class AlbumService {
         if (!(dataValidation.validateUserId(user, id))) {
             log.info("Cannot find user with ID={}", id);
 
-            return ResponseEntity.badRequest().body(builder.buildAlertResponse("invalid_Id."));
+            return ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID__ID));
         }
         else {
             List<UserAlbumResponse> albumList = createAlbumList(user);
             if(albumList.isEmpty()){
                 log.info("User ={} album list is empty", id);
 
-                return ResponseEntity.ok().body(builder.buildAlertResponse("empty_album_list"));
+                return ResponseEntity.ok().body(builder.buildAlertResponse(MessageConstants.EMPTY_LIST));
             }
             else {
                 log.info("Returning album list for user id={}", id);

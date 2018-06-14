@@ -3,11 +3,14 @@ package ucab.ingsw.socialnetworkproject.service.strategy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+import ucab.ingsw.socialnetworkproject.response.MessageConstants;
 import ucab.ingsw.socialnetworkproject.response.searchResponse.InstaVideoResponse;
 import ucab.ingsw.socialnetworkproject.service.Builder;
 import ucab.ingsw.socialnetworkproject.service.dataContainer.instagram.InstaData;
 import ucab.ingsw.socialnetworkproject.service.dataContainer.instagram.InstagramContainer;
 import ucab.ingsw.socialnetworkproject.response.searchResponse.InstaResponse;
+import ucab.ingsw.socialnetworkproject.service.validation.DataValidation;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,13 +19,12 @@ import java.util.List;
 public class InstagramSearchStrategy implements SearchStrategy {
 
     private static final String AUTH_TOKEN = "705751369.9ec8a89.ee214d6054f9473bb022043178680802";
-    private static final String INST_IMAGE_TERM = "image";
 
     private List<InstaResponse> buildResponse(List<InstaData> instaData){
         List<InstaResponse> instaResponseList = new ArrayList<>();
         instaData.forEach(i -> {
             InstaResponse instaResponse;
-            if(i.getType().equals(INST_IMAGE_TERM))
+            if(i.getType().equals(DataValidation.MEDIA_TYPE_IMAGE))
                 instaResponse = new InstaResponse();
             else {
                 instaResponse = new InstaVideoResponse();
@@ -44,7 +46,7 @@ public class InstagramSearchStrategy implements SearchStrategy {
         if(instagramContainer.getData().isEmpty()){
             log.info("No result for search term ={}", searchTerm);
 
-            return ResponseEntity.badRequest().body(builder.buildAlertResponse("no_result_found"));
+            return ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.NO_RESULT));
         }
         else {
             log.info("Returning results for search term ={}", searchTerm);

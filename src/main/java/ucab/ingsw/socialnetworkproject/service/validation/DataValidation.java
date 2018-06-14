@@ -11,12 +11,11 @@ import ucab.ingsw.socialnetworkproject.model.User;
 import ucab.ingsw.socialnetworkproject.repository.AlbumRepository;
 import ucab.ingsw.socialnetworkproject.repository.MediaRepository;
 import ucab.ingsw.socialnetworkproject.repository.UserRepository;
+import ucab.ingsw.socialnetworkproject.response.MessageConstants;
 import ucab.ingsw.socialnetworkproject.response.UserAlbumResponse;
 import ucab.ingsw.socialnetworkproject.service.Builder;
 
-import java.lang.reflect.Field;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 
@@ -41,6 +40,12 @@ public class DataValidation {
 
     private ResponseEntity<Object> responseEntity;
 
+    public static final  String MEDIA_TYPE_IMAGE = "image";
+
+    public static final String MEDIA_TYPE_VIDEO = "video";
+
+    public static final String MEDIA_TYPE_AUDIO = "audio";
+
 
     private String decrypt(String text){ //decripta string usando base64
         byte[] decoded = Base64.getDecoder().decode(text);
@@ -48,33 +53,37 @@ public class DataValidation {
     }
 
     private static boolean validDate (String string){
-        String[] splited=string.split("/");
-        int year=Integer.parseInt(splited[0]);
-        int mon=Integer.parseInt(splited[1]);
-        int day=Integer.parseInt(splited[2]);
-        if (!(year>0 && mon>0 && mon<13 && day>0 && day<32)) return false; //valores fuera de rango
-        int b=0;
-        if (year%400==0) b=1; //año bisiesto?
-        else if (year %4==0 && year%100!=0)b=1;
-        if (mon==2 && day>(28+b)) return false; // febrero fuera de rango
-        LocalDateTime current = LocalDateTime.now();
-        if (current.getYear()>year){// año pasado
-            return true;
-        } else if (current.getYear()==year){ //mismo año
-            if (current.getMonthValue()>mon){//mes pasado
+        try {
+            String[] splited = string.split("/");
+            int year = Integer.parseInt(splited[0]);
+            int mon = Integer.parseInt(splited[1]);
+            int day = Integer.parseInt(splited[2]);
+            if (!(year > 0 && mon > 0 && mon < 13 && day > 0 && day < 32)) return false; //valores fuera de rango
+            int b = 0;
+            if (year % 400 == 0) b = 1; //año bisiesto?
+            else if (year % 4 == 0 && year % 100 != 0) b = 1;
+            if (mon == 2 && day > (28 + b)) return false; // febrero fuera de rango
+            LocalDateTime current = LocalDateTime.now();
+            if (current.getYear() > year) {// año pasado
                 return true;
-            } else if (current.getMonthValue()==mon){// mismo mes
-                if (current.getDayOfMonth()>day){ //dia pasado
+            } else if (current.getYear() == year) { //mismo año
+                if (current.getMonthValue() > mon) {//mes pasado
                     return true;
-                } else if (current.getDayOfMonth()==day){ //mismo dia
-                    return false;
-                } else { //dia futuro
+                } else if (current.getMonthValue() == mon) {// mismo mes
+                    if (current.getDayOfMonth() > day) { //dia pasado
+                        return true;
+                    } else if (current.getDayOfMonth() == day) { //mismo dia
+                        return false;
+                    } else { //dia futuro
+                        return false;
+                    }
+                } else { //mes futuro
                     return false;
                 }
-            } else { //mes futuro
+            } else { //año futuro
                 return false;
             }
-        } else { //año futuro
+        }catch(NumberFormatException e){
             return false;
         }
     }
@@ -108,7 +117,7 @@ public class DataValidation {
 
     private boolean validateConfirmationPassword(String password, String confirmationPassword){
         if(!(password.equals(confirmationPassword))){
-            log.info("Mismatching passwords");
+            log.info("Missmatching passwords");
 
             return false;
         }
@@ -177,19 +186,19 @@ public class DataValidation {
 
     public boolean validateRegistration(UserSingUpCommand command){
         if(!(validDate(command.getDateOfBirth()))){
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("invalid_date"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID_DATE));
             return false;
         }
         else if(!(checkForExistingEmail(command.getEmail()))){
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("email_already_registered"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.EXISTING_EMAIL));
             return false;
         }
         else if(!(validatePasswordLength(command.getPassword()))){
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("invalid_password_size"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID_PASS_SIZE));
             return false;
         }
         else if(!(validateConfirmationPassword(command.getPassword(), command.getConfirmationPassword()))){
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("mismatching passwords"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.MISMATCHING__PASS));
             return false;
         }
         else{
@@ -199,15 +208,15 @@ public class DataValidation {
 
     public boolean validateLogIn(User user, UserLoginCommand command){
         if(!(validateUserEmail(user, command.getEmail()))){
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("invalid_mail"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID__EMAIL));
             return false;
         }
         else if(!(validatePasswordLength(command.getPassword()))) {
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("invalid_password_size"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID_PASS_SIZE));
             return false;
         }
         else if(!(validateUserPassword(command.getPassword(), user.getPassword(), String.valueOf(user.getId())))){
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("invalid_pass"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID__PASS));
             return false;
         }
         else{
@@ -217,49 +226,49 @@ public class DataValidation {
 
     public boolean validateUpdateUser(User user, String id, UserUpdateCommand command){
         if(!(validateUserId(user,id))){
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("invalid_id"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID__ID));
             return false;
         }
         else if(!(validateUserToken(command.getAuthToken(),user.getAuthToken()))){
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("unauthenticated_user"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID__TOKEN));
             return false;
         }
         else if(!(validDate(command.getDateOfBirth()))){
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("invalid_date"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID_DATE));
             return false;
         }
         else if(!(checkForExistingEmail(command.getEmail())) && !(command.getEmail().equals(user.getEmail()))){
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("email_already_registered"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.EXISTING_EMAIL));
             return false;
         }
         else if(!(validatePasswordLength(command.getPassword()))){
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("invalid_password_size"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID_PASS_SIZE));
             return false;
         }
         else{
-            responseEntity = ResponseEntity.ok().body(builder.buildAlertResponse("success"));
+            responseEntity = ResponseEntity.ok().body(builder.buildAlertResponse(MessageConstants.SUCCESS));
             return true;
         }
     }
 
     public boolean validateLogOut(User user, String id, UserLogoutCommand command){
         if(!(validateUserId(user,id))){
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("invalid_id"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID__ID));
             return false;
         }
         else if(!(validateUserToken(command.getAuthToken(),user.getAuthToken()))){
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("unauthenticated_user"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID__TOKEN));
             return false;
         }
         else{
-            responseEntity = ResponseEntity.ok().body(builder.buildAlertResponse("success"));
+            responseEntity = ResponseEntity.ok().body(builder.buildAlertResponse(MessageConstants.SUCCESS));
             return true;
         }
     }
 
     public boolean checkFriendInList(List<Long> friends, Long friendId){
         if(friends.contains(friendId)){
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("already_in_friends_list"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.EXISTING__FRIEND));
             return true;
         }
         else return false;
@@ -268,21 +277,21 @@ public class DataValidation {
 
     public boolean validateAddFriend(User user, String id, UserFriendCommand command){
         if(!(validateUserId(user,id))){
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("invalid_id"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID__ID));
             return false;
         }
         else if(!(validateUserId(command.getFriendId()))){
             log.info("Cannot find friend with id={}", command.getFriendId());
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("invalid_friend_id"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID_FRIEND_ID));
             return false;
         }
         else if(user.getId() == Long.parseLong(command.getFriendId())){
             log.info("User ={} cannot be friend with self", user.getId());
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("matching_ids"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.MATCHING__IDS));
             return false;
         }
         else if(!(validateUserToken(command.getAuthToken(),user.getAuthToken()))){
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("unauthenticated_user"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID__TOKEN));
             return false;
         }
         else return true;
@@ -294,7 +303,7 @@ public class DataValidation {
         }
         else if(!(checkFriendInList(user.getFriends(),Long.parseLong(command.getFriendId())))){
             log.info("Friend ={} not on user ={} friends list", command.getFriendId(), user.getId());
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("friend_id_not_on_list"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.FRIEND_NOT_ON_LIST));
             return false;
         }
 
@@ -303,7 +312,7 @@ public class DataValidation {
 
     public boolean checkAlbumName(List<UserAlbumResponse> albumList, List<Long> albumIdLis, String name){
         if(albumList.stream().anyMatch(i -> i.getName().toLowerCase().equals(name.toLowerCase()))){
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("album_name_already_used"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.ALBUM_NAME__USED));
             return true;
         }
         return false;
@@ -311,11 +320,11 @@ public class DataValidation {
 
     public boolean validateAddAlbum(User user, String id, UserNewAlbumCommand command){
         if(!(validateUserId(user,id))){
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("invalid_id"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID__ID));
             return false;
         }
         else if(!(validateUserToken(command.getAuthToken(),user.getAuthToken()))){
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("unauthenticated_user"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID__TOKEN));
             return false;
         }
         else return true;
@@ -323,21 +332,21 @@ public class DataValidation {
 
     public boolean validateRemoveAlbum(User user, String id, UserRemoveAlbumCommand command){
         if(!(validateUserId(user,id))){
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("invalid_id"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID__ID));
             return false;
         }
         else if(!(validateUserToken(command.getAuthToken(),user.getAuthToken()))){
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("unauthenticated_user"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID__TOKEN));
             return false;
         }
         else if(!(validateAlbumId(command.getAlbumId()))){
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("invalid_album_Id"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID_ALBUM_ID));
             return false;
         }
         else if(!(user.getAlbums().stream().anyMatch(i-> i == Long.parseLong(command.getAlbumId())))){
             log.info("Album id ={} is not on user ={} album list", command.getAlbumId(), command.getUserId());
 
-            responseEntity =  ResponseEntity.badRequest().body(builder.buildAlertResponse("album_id_not_on_list"));
+            responseEntity =  ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.ALBUM_NOT_ON_LIST));
             return  false;
         }
         else return true;
@@ -345,25 +354,29 @@ public class DataValidation {
 
     public boolean validateUpdateAlbum(User user, String id, UserUpdateAlbumCommand command){
         if(!(validateUserId(user,id))){
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("invalid_id"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID__ID));
             return false;
         }
         else if(!(validateUserToken(command.getAuthToken(),user.getAuthToken()))){
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("unauthenticated_user"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID__TOKEN));
             return false;
         }
         else if(!(validateAlbumId(command.getAlbumId()))){
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("invalid_album_Id"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID_ALBUM_ID));
             return false;
         }
         else if(!(user.getAlbums().stream().anyMatch(i-> i == Long.parseLong(command.getAlbumId())))){
             log.info("Album id ={} is not on user ={} album list", command.getAlbumId(), command.getUserId());
 
-            responseEntity =  ResponseEntity.badRequest().body(builder.buildAlertResponse("album_id_not_on_list"));
+            responseEntity =  ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.ALBUM_NOT_ON_LIST));
             return  false;
         }
 
         else return true;
+    }
+
+    public  boolean validateMediaType(UserNewMediaCommand command){
+        return ((command.getType().equals(MEDIA_TYPE_IMAGE)) || (command.getType().equals(MEDIA_TYPE_VIDEO)) || (command.getType().equals(MEDIA_TYPE_AUDIO)));
     }
 
     public boolean validateMissingVideoUrl(UserNewMediaCommand command) {
@@ -372,47 +385,52 @@ public class DataValidation {
 
     public boolean validateAddMedia(User user, String id, UserNewMediaCommand command){
         if(!(validateUserId(user,id))){
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("invalid_id"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID__ID));
             return false;
         }
         else if(!(validateUserToken(command.getAuthToken(),user.getAuthToken()))){
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("unauthenticated_user"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID__TOKEN));
             return false;
         }
         else if(!(validateAlbumId(command.getAlbumId()))){
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("invalid_album_Id"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID_ALBUM_ID));
             return false;
         }
         else if(!(user.getAlbums().stream().anyMatch(i-> i == Long.parseLong(command.getAlbumId())))){
             log.info("Album id ={} is not on user ={} album list", command.getAlbumId(), command.getUserId());
 
-            responseEntity =  ResponseEntity.badRequest().body(builder.buildAlertResponse("album_id_not_on_list"));
+            responseEntity =  ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.ALBUM_NOT_ON_LIST));
             return  false;
+        }
+        else if(!(validateMediaType(command))){
+            log.info("{} is not a valid media type", command.getType());
+            responseEntity =  ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID_MEDIA_TYPE));
+            return false;
         }
         else return true;
     }
 
     public boolean validateRemoveMedia(User user, String id, UserRemoveMediaCommand command){
         if(!(validateUserId(user,id))){
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("invalid_id"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID__ID));
             return false;
         }
         else if(!(validateUserToken(command.getAuthToken(),user.getAuthToken()))){
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("unauthenticated_user"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID__TOKEN));
             return false;
         }
         else if(!(validateAlbumId(command.getAlbumId()))){
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("invalid_album_Id"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID_ALBUM_ID));
             return false;
         }
         else if(!(user.getAlbums().stream().anyMatch(i-> i == Long.parseLong(command.getAlbumId())))){
             log.info("Album id ={} is not on user ={} album list", command.getAlbumId(), command.getUserId());
 
-            responseEntity =  ResponseEntity.badRequest().body(builder.buildAlertResponse("album_id_not_on_list"));
+            responseEntity =  ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.ALBUM_NOT_ON_LIST));
             return  false;
         }
         else if(!(validateMediaId(command.getMediaId()))){
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("invalid_media_Id"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID_MEDIA_ID));
             return false;
         }
         else return true;
@@ -422,7 +440,7 @@ public class DataValidation {
         if(!(album.getMedia().stream().anyMatch(i-> i == Long.parseLong(command.getMediaId())))){
             log.info("Media id ={} is not on album ={} media list", command.getAlbumId(), command.getMediaId());
 
-            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse("media_id_not_on_list"));
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.MEDIA_NOT_ON_LIST));
             return false;
         }
         else return true;
