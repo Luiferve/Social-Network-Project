@@ -42,4 +42,6 @@ public class UserUpdateCommand implements Serializable{
     @NotEmpty(message = "Se requiere un token de autorizacion.")
     private String authToken;
 
+    private String profilePicture;
+
 }

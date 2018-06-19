@@ -79,15 +79,20 @@ public class UserService {
         return user;
     }
 
-    private User buildExistingUser(UserUpdateCommand command, String id) { //actualiza los datos de un usuario existente
+    private User buildExistingUser(UserUpdateCommand command, User oldUser) { //actualiza los datos de un usuario existente
         User user = new User();
-        user.setId(Long.parseLong(id));
+        user.setId(oldUser.getId());
         user.setFirstName(command.getFirstName());
         user.setLastName(command.getLastName());
         user.setEmail(command.getEmail().toLowerCase());
         user.setPassword(command.getPassword());
         user.setDateOfBirth(command.getDateOfBirth());
         user.setAuthToken(command.getAuthToken());
+        if((command.getProfilePicture() != null) && !(command.getProfilePicture().equals(" ")) && !(command.getProfilePicture().equals(""))){
+            user.setProfilePicture(command.getProfilePicture());
+        }
+        else
+            user.setProfilePicture(oldUser.getProfilePicture());
         return user;
     }
 
@@ -145,7 +150,7 @@ public class UserService {
             return  dataValidation.getResponseEntity();
         }
         else{
-            User user = buildExistingUser(command, id);
+            User user = buildExistingUser(command, oldUser);
             user.setFriends(oldUser.getFriends());
             user.setAlbums(oldUser.getAlbums());
             user = userRepository.save(user);

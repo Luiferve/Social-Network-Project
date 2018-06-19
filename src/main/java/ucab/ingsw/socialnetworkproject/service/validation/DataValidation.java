@@ -94,8 +94,6 @@ public class DataValidation {
 
     private boolean checkForExistingEmail(String email){
         if(userRepository.existsByEmailIgnoreCase(email)){
-            log.info("Email {} already registered", email);
-
             return false;
         }
         else return true;
@@ -194,6 +192,7 @@ public class DataValidation {
             return false;
         }
         else if(!(checkForExistingEmail(command.getEmail()))){
+            log.info("Email {} already registered", command.getEmail());
             responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.EXISTING_EMAIL));
             return false;
         }
@@ -246,6 +245,7 @@ public class DataValidation {
             return false;
         }
         else if(!(checkForExistingEmail(command.getEmail())) && !(command.getEmail().equals(user.getEmail()))){
+            log.info("Email {} already registered", command.getEmail());
             responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.EXISTING_EMAIL));
             return false;
         }
