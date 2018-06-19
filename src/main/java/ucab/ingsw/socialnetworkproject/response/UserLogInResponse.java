@@ -13,4 +13,5 @@ public class UserLogInResponse {
     private String email;
     private String dateOfBirth;
     private String authToken;
+    private String profilePicture;
 }

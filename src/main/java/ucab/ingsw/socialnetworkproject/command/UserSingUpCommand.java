@@ -43,4 +43,8 @@ public class UserSingUpCommand implements Serializable {
     @NotNull(message = "Se requiere fecha de nacimiento.")
     @NotEmpty(message = "Se requiere fecha de nacimiento.")
     private String dateOfBirth;
+
+    @NotNull(message = "Se requiere genero de usuario.")
+    @NotEmpty(message = "Se requiere genero de usuario.")
+    private String gender;
 }

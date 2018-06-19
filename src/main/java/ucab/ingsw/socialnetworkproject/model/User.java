@@ -23,6 +23,7 @@ public class User  implements Serializable {
     private String password;
     private String dateOfBirth;
     private String authToken;
+    private String profilePicture;
 
     private List<Long> albums = new ArrayList<>();
     private List<Long> friends = new ArrayList<>();

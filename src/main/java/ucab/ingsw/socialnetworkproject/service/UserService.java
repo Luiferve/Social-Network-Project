@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import ucab.ingsw.socialnetworkproject.command.*;
 import ucab.ingsw.socialnetworkproject.response.MessageConstants;
 import ucab.ingsw.socialnetworkproject.response.UserLogInResponse;
@@ -11,6 +12,7 @@ import ucab.ingsw.socialnetworkproject.model.User;
 import ucab.ingsw.socialnetworkproject.repository.UserRepository;
 import ucab.ingsw.socialnetworkproject.response.UserNormalResponse;
 import ucab.ingsw.socialnetworkproject.response.UserProfileResponse;
+import ucab.ingsw.socialnetworkproject.service.dataContainer.profilePicture.RandomUserContainer;
 import ucab.ingsw.socialnetworkproject.service.validation.DataValidation;
 
 import java.math.BigInteger;
@@ -34,6 +36,8 @@ public class UserService {
     @Autowired
     private Builder builder;
 
+    private static final String profilePicApi = "https://randomuser.me/api/?gender=";
+
     private String getMD5(String text){ //encripta string usando MD5 hash
         try{
             MessageDigest md5 = MessageDigest.getInstance("MD5");
@@ -46,6 +50,20 @@ public class UserService {
         return null;
     }
 
+    private String getProfilePic(String gender){
+        String url;
+        if(gender.toLowerCase().equals("male")){
+            url = profilePicApi+"male";
+        }
+        else
+            url = profilePicApi+"female";
+        RestTemplate restTemplate = new RestTemplate();
+        RandomUserContainer randomUserContainer = restTemplate.getForObject(url, RandomUserContainer.class);
+
+        log.info("Returning profile picture ={}");
+        return randomUserContainer.getResults().get(0).getPicture().getLarge();
+    }
+
     private User buildNewUser(UserSingUpCommand command) { //crea un usuario nuevo con los atributos recibidos por comando
         User user = new User();
         user.setId(System.currentTimeMillis());
@@ -54,6 +72,7 @@ public class UserService {
         user.setEmail(command.getEmail());
         user.setPassword(command.getPassword());
         user.setDateOfBirth(command.getDateOfBirth());
+        user.setProfilePicture(getProfilePic(command.getGender()));
         user.setAuthToken("0");
         user.setAlbums(null);
         user.setFriends(null);
@@ -95,6 +114,7 @@ public class UserService {
                 normalResponse.setLastName(it.getLastName());
                 normalResponse.setEmail(it.getEmail());
                 normalResponse.setDateOfBirth(it.getDateOfBirth());
+                normalResponse.setProfilePicture(it.getProfilePicture());
                 friendList.add(normalResponse);
             }
         });
@@ -152,6 +172,7 @@ public class UserService {
             userLogInResponse.setEmail(user.getEmail());
             userLogInResponse.setId(user.getId());
             userLogInResponse.setDateOfBirth(user.getDateOfBirth());
+            userLogInResponse.setProfilePicture(user.getProfilePicture());
             String token = getMD5(user.getEmail()) + "." + getMD5(Long.toString(System.currentTimeMillis()));
             user.setAuthToken(token);
             user = userRepository.save(user);
@@ -193,6 +214,7 @@ public class UserService {
             userProfileResponse.setEmail(user.getEmail());
             userProfileResponse.setPassword(user.getPassword());
             userProfileResponse.setDateOfBirth(user.getDateOfBirth());
+            userProfileResponse.setProfilePicture(user.getProfilePicture());
             userProfileResponse.setFriends(user.getFriends());
             userProfileResponse.setAlbums(user.getAlbums());
             log.info("Returning info for user with ID={}", id);
@@ -215,6 +237,7 @@ public class UserService {
                 userNormalResponse.setEmail(it.getEmail());
                 userNormalResponse.setId(it.getId());
                 userNormalResponse.setDateOfBirth(it.getDateOfBirth());
+                userNormalResponse.setProfilePicture(it.getProfilePicture());
 
                 response.add(userNormalResponse);
             }

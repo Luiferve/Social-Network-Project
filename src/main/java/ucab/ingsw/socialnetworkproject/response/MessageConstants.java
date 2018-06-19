@@ -3,6 +3,7 @@ package ucab.ingsw.socialnetworkproject.response;
 public class MessageConstants {
     public static final String SUCCESS = "success";
     public static final String INVALID_DATE = "invalid_date";
+    public static final String INVALID_GENDER = "invalid_gender";
     public static final String EXISTING_EMAIL = "email_already_registered";
     public static final String INVALID_PASS_SIZE = "invalid_password_size";
     public static final String MISMATCHING__PASS = "mismatching_passwords";

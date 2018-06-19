@@ -88,6 +88,10 @@ public class DataValidation {
         }
     }
 
+    private boolean validateGender(String gender){
+        return ((gender.toLowerCase().equals("male"))||(gender.toLowerCase().equals("female")));
+    }
+
     private boolean checkForExistingEmail(String email){
         if(userRepository.existsByEmailIgnoreCase(email)){
             log.info("Email {} already registered", email);
@@ -199,6 +203,10 @@ public class DataValidation {
         }
         else if(!(validateConfirmationPassword(command.getPassword(), command.getConfirmationPassword()))){
             responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.MISMATCHING__PASS));
+            return false;
+        }
+        else if(!(validateGender(command.getGender()))){
+            responseEntity = ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID_GENDER));
             return false;
         }
         else{
