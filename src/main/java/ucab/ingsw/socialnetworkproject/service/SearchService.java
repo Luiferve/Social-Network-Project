@@ -21,11 +21,13 @@ public class SearchService {
         this.strategy = strategy;
     }
 
-    public ResponseEntity<Object> search(String searchTerm){
-        if(searchTerm.matches("[a-zA-Z0-9]*"))
-            return  strategy.seeker(searchTerm);
-        else
+    public ResponseEntity<Object> search(String searchTerm, String searchStrategy){
+        if(!(searchTerm.matches("[a-zA-Z0-9]*"))&&(searchStrategy.toLowerCase().equals("instagram"))){
             log.info("Search term ={} contains invalid characters", searchTerm);
+
             return ResponseEntity.badRequest().body(builder.buildAlertResponse(MessageConstants.INVALID_SEARCH_TERM));
+        }
+        else
+            return strategy.seeker(searchTerm);
     }
 }
