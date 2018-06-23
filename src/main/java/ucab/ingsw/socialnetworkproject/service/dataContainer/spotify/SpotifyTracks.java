@@ -12,4 +12,6 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SpotifyTracks implements Serializable {
     private List<SpotifyItem> items;
+    private String previous;
+    private String next;
 }

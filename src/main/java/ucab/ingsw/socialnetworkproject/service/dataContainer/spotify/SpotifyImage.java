@@ -5,13 +5,11 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
-import java.util.List;
-
 
 @Data
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SpotifyAlbum implements Serializable {
-    private String name;
-    private List<SpotifyImage> images;
+public class SpotifyImage implements Serializable {
+    private int height;
+    private String url;
 }
