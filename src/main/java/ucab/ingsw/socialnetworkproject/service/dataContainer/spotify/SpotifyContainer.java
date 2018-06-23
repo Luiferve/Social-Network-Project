@@ -1,0 +1,16 @@
+package ucab.ingsw.socialnetworkproject.service.dataContainer.spotify;
+
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Data;
+import lombok.ToString;
+
+import java.io.Serializable;
+import java.util.List;
+
+@Data
+@ToString
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class SpotifyContainer implements Serializable {
+    private SpotifyTracks tracks;
+}

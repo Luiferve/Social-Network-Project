@@ -8,6 +8,7 @@ import ucab.ingsw.socialnetworkproject.service.Builder;
 import ucab.ingsw.socialnetworkproject.service.strategy.InstagramSearchStrategy;
 import ucab.ingsw.socialnetworkproject.service.SearchService;
 import ucab.ingsw.socialnetworkproject.service.strategy.SearchStrategy;
+import ucab.ingsw.socialnetworkproject.service.strategy.SpotifySearchStrategy;
 import ucab.ingsw.socialnetworkproject.service.strategy.YoutubeSearchStrategy;
 
 import java.util.ArrayList;
@@ -30,7 +31,7 @@ public class SearchController {
         validStrategy = new ArrayList<>();
         validStrategy.add("instagram");
         validStrategy.add("youtube");
-        validStrategy.add("soundcloud");
+        validStrategy.add("spotify");
     }
 
     private boolean checkStrategy(String strategy){
@@ -54,10 +55,11 @@ public class SearchController {
                 ((YoutubeSearchStrategy) searchStrategy).setPageToken(pageToken);
                 searchService.setSearchStrategy(searchStrategy);
                 searchTerm = searchTerm.replace(" ", "+");
-            }/*
+            }
             else if (strategy.toLowerCase().equals(validStrategy.get(2))){
-                //searchService.setSearchStrategy(new SoundcloudSearchStrategy());
-            }*/
+                searchService.setSearchStrategy(new SpotifySearchStrategy());
+                searchTerm = searchTerm.replace(" ", "+");
+            }
             //searchTerm = searchTerm.replace(" ", "");
             return searchService.search(searchTerm, strategy);
         }
