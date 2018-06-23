@@ -62,7 +62,8 @@ public class MediaService {
         media.setAlbumId(Long.parseLong(command.getAlbumId()));
         media.setUrl(command.getUrl());
         media.setType(command.getType().toLowerCase());
-        media.setLink(command.getLink());
+        if(command.getLink() != null)
+            media.setLink(command.getLink());
         return media;
     }
 
@@ -81,7 +82,8 @@ public class MediaService {
             mediaResponse.setId(videoMedia.getId());
             mediaResponse.setUrl(videoMedia.getUrl());
             mediaResponse.setType(videoMedia.getType());
-            mediaResponse.setLink(videoMedia.getLink());
+            if(videoMedia.getLink() != null)
+                mediaResponse.setLink(videoMedia.getLink());
             ((UserVideoMediaResponse) mediaResponse).setVideoUrl(videoMedia.getVideoUrl());
         }
         return mediaResponse;
