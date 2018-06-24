@@ -39,6 +39,7 @@ public class SearchControllerTest {
         validSearchStrategy = null;
         invalidSearchStrategy = null;
         searchService = null;
+        searchController  = null;
     }
 
     @Test
