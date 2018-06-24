@@ -44,7 +44,7 @@ public class SearchController {
     }
 
     @RequestMapping(value = "/{strategy}", method = RequestMethod.GET)
-    public ResponseEntity search(@PathVariable("strategy") String strategy, @RequestParam("q") String searchTerm, @Nullable @RequestParam("pageToken") String pageToken) {
+    public ResponseEntity search(@PathVariable("strategy") String strategy, @RequestParam("q") String searchTerm, @Nullable @RequestParam("pageToken") String pageToken,@Nullable @RequestParam("offset") String offset) {
         if(checkStrategy(strategy)) {
             if (strategy.toLowerCase().equals(validStrategy.get(0))) {
                 searchService.setSearchStrategy(new InstagramSearchStrategy());
@@ -57,7 +57,9 @@ public class SearchController {
                 searchTerm = searchTerm.replace(" ", "+");
             }
             else if (strategy.toLowerCase().equals(validStrategy.get(2))){
-                searchService.setSearchStrategy(new SpotifySearchStrategy());
+                SearchStrategy searchStrategy = new SpotifySearchStrategy();
+                ((SpotifySearchStrategy) searchStrategy).setOffset(offset);
+                searchService.setSearchStrategy(searchStrategy);
                 searchTerm = searchTerm.replace(" ", "+");
             }
             //searchTerm = searchTerm.replace(" ", "");

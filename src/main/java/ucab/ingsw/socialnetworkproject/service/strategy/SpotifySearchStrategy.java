@@ -23,14 +23,28 @@ import java.util.List;
 @Slf4j
 public class SpotifySearchStrategy implements SearchStrategy {
 
-    public static final String CREDENTIALS="ODg0M2Y5ZGIwMmE1NDM3OGI1ZGRiMmUwYzRlMmY1YmI6ODYxY2IzMGQwNWZjNGQ2MWE1YzE1OWE4YzY3YTM5OWQ=";
-    public static String ACCESS_TOKEN="BQB_cBf7ybEJYkSXAmub8Z8yICIcYvKiYMepsX4e77cVa186k2Xh5R6gzmWkSgLu9PM6U6CdKrNDYcxEwC0" ;
-    public static final String PAGE_SIZE="10";
+    private static final String CREDENTIALS="ODg0M2Y5ZGIwMmE1NDM3OGI1ZGRiMmUwYzRlMmY1YmI6ODYxY2IzMGQwNWZjNGQ2MWE1YzE1OWE4YzY3YTM5OWQ=";
+    private static String ACCESS_TOKEN="BQB_cBf7ybEJYkSXAmub8Z8yICIcYvKiYMepsX4e77cVa186k2Xh5R6gzmWkSgLu9PM6U6CdKrNDYcxEwC0" ;
+    private static final String PAGE_SIZE="10";
+    private String offset;
 
     private SpotifyResponse buildResponse(SpotifyTracks spotifyTracks){
         SpotifyResponse spotifyResponse=new SpotifyResponse();
-        spotifyResponse.setNextPageUrl(spotifyTracks.getNext());
-        spotifyResponse.setPrevPageUrl(spotifyTracks.getPrevious());
+
+        if (spotifyTracks.getNext()!=null){
+            String[] offsetA=spotifyTracks.getNext().split("&");
+            String[] offsetB=offsetA[2].split("=");
+            String offsetC=offsetB[1];
+            spotifyResponse.setNextPageOffset(offsetC);
+        }
+
+        if (spotifyTracks.getPrevious()!=null){
+            String[] offsetA=spotifyTracks.getPrevious().split("&");
+            String[] offsetB=offsetA[2].split("=");
+            String offsetC=offsetB[1];
+            spotifyResponse.setPrevPageOffset(offsetC);
+        }
+
         List<SpotifyTrackResponse> trackResponses = new ArrayList<>();
         spotifyTracks.getItems().forEach( i-> {
             SpotifyTrackResponse spotifyTrackResponse=new SpotifyTrackResponse();
@@ -53,8 +67,13 @@ public class SpotifySearchStrategy implements SearchStrategy {
         return spotifyResponse;
     }
 
+    public void setOffset(String offset) {
+        this.offset = offset;
+    }
+
     public ResponseEntity<Object> seeker(String searchTerm) {
         String searchUrl="https://api.spotify.com/v1/search?type=track&q="+searchTerm+"&limit="+PAGE_SIZE;
+        if ((offset!=null)&&(Integer.parseInt(offset)>0)) searchUrl=searchUrl+"&offset="+offset;
         Builder builder = new Builder();
         boolean done=true;
         while (done){
