@@ -5,6 +5,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
+
 import org.springframework.http.ResponseEntity;
 import ucab.ingsw.socialnetworkproject.service.strategy.InstagramSearchStrategy;
 
@@ -29,7 +30,7 @@ public class InstagramTest {
     }
 
     @Test
-    public void searchInstagram(){
+    public void searchInstagramTest(){
         try {
             ResponseEntity<Object> response = searchStrategy.seeker(validSearchTerm);
             assertEquals(response.toString(), 200, response.getStatusCode().value());
@@ -39,7 +40,7 @@ public class InstagramTest {
     }
 
     @Test
-    public void failedSearchInstagram(){
+    public void failedSearchInstagramTest(){
         try {
             ResponseEntity<Object> response = searchStrategy.seeker(invalidSearchTerm);
             assertEquals(response.toString(), 400, response.getStatusCode().value());

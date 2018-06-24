@@ -1,5 +1,6 @@
 package ucab.ingsw.socialnetworkproject.service;
 
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +10,7 @@ import ucab.ingsw.socialnetworkproject.service.strategy.SearchStrategy;
 
 @Slf4j
 
+@Data
 @Service("searchService")
 public class SearchService {
 

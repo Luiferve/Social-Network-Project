@@ -1,5 +1,6 @@
 package ucab.ingsw.socialnetworkproject.controller;
 
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
@@ -14,6 +15,7 @@ import ucab.ingsw.socialnetworkproject.service.strategy.YoutubeSearchStrategy;
 import java.util.ArrayList;
 import java.util.List;
 
+@Data
 @CrossOrigin //Permite conexion desde aplicacion externa.
 @RestController
 @RequestMapping(value = "/search", produces = "application/json")
