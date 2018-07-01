@@ -24,6 +24,7 @@ public class YoutubeSearchStrategy implements SearchStrategy {
     private static final String API_KEY = "AIzaSyA0MCKiAjly2_r_b5JbDqPPvo7CzBkE3CE";
     private static final String TYPE = "video";
     private static final String ORDER = "relevance";
+    private static final String EMBEDDABLE = "true";
     private String pageToken;
 
     private YouTube buildYoutube(){
@@ -70,6 +71,7 @@ public class YoutubeSearchStrategy implements SearchStrategy {
            search.setOrder(ORDER);
            search.setPageToken(pageToken);
            search.setMaxResults(MAX_SEARCH_RESULTS);
+           search.setVideoEmbeddable(EMBEDDABLE);
            search.setFields("nextPageToken,prevPageToken,pageInfo/totalResults,pageInfo/resultsPerPage,items(id/videoId,snippet/title,snippet/thumbnails/high/url)");
            SearchListResponse searchResponse = search.execute();
            YoutubeResponse youtubeResponse = buildResponse(searchResponse);
