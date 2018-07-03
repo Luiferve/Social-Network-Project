@@ -8,7 +8,7 @@ import java.util.List;
 @Data
 @ToString
 public class SpotifyResponse {
-    private String nextPageUrl;
-    private String prevPageUrl;
+    private String nextPageOffset;
+    private String prevPageOffset;
     private List<SpotifyTrackResponse> tracks;
 }

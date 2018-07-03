@@ -20,7 +20,7 @@ import java.util.List;
 
 
 public class YoutubeSearchStrategy implements SearchStrategy {
-    private static final long MAX_SEARCH_RESULTS = 10;
+    private static final long MAX_SEARCH_RESULTS = 12;
     private static final String API_KEY = "AIzaSyA0MCKiAjly2_r_b5JbDqPPvo7CzBkE3CE";
     private static final String TYPE = "video";
     private static final String ORDER = "relevance";

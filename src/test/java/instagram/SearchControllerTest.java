@@ -46,7 +46,7 @@ public class SearchControllerTest {
     public void searchControllerTest(){
         try {
             when(searchService.search(searchTerm,validSearchStrategy)).thenReturn(ResponseEntity.ok("success"));
-            ResponseEntity response = searchController.search(validSearchStrategy, searchTerm, null);
+            ResponseEntity response = searchController.search(validSearchStrategy, searchTerm, null, null );
             assertEquals(response.toString(), 200, response.getStatusCode().value());
         }catch(Throwable e){
             Assert.fail(e.getMessage());
@@ -56,7 +56,7 @@ public class SearchControllerTest {
     @Test
     public void invalidStrategyTest(){
         try {
-            ResponseEntity response = searchController.search(invalidSearchStrategy, searchTerm, null);
+            ResponseEntity response = searchController.search(invalidSearchStrategy, searchTerm, null,null );
             assertEquals(response.toString(), 400, response.getStatusCode().value());
         }catch(Throwable e){
             Assert.fail(e.getMessage());
