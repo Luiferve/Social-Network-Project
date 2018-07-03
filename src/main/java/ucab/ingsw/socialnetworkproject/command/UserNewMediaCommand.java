@@ -37,4 +37,6 @@ public class UserNewMediaCommand implements Serializable {
 
     private String videoUrl;
 
+    private String name;
+
 }

@@ -19,4 +19,5 @@ public class Media  implements Serializable {
     private String link;
     private String type;
     private String videoUrl;
+    private String name;
 }

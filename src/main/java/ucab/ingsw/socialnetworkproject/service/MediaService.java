@@ -52,6 +52,8 @@ public class MediaService {
         media.setType(command.getType().toLowerCase());
         if(command.getLink() != null)
             media.setLink(command.getLink());
+        if(command.getName() != null)
+            media.setName(command.getName());
         return media;
 
     }
@@ -66,6 +68,8 @@ public class MediaService {
             mediaResponse.setLink(media.getLink());
         if(media.getVideoUrl() != null)
             mediaResponse.setVideoUrl(media.getVideoUrl());
+        if(media.getName() != null)
+            mediaResponse.setName(media.getName());
         return mediaResponse;
     }
 
@@ -95,7 +99,7 @@ public class MediaService {
                 Album album = albumRepository.findById(Long.parseLong(command.getAlbumId())).get();
                 boolean result = album.getMedia().add(media.getId());
                 if (result) {
-                    log.info("Media ={} added to album ={} media list", album.getId(), user.getId());
+                    log.info("Media ={} added to album ={} media list", media.getId(), album.getId());
 
                     albumRepository.save(album);
                     mediaRepository.save(media);

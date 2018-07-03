@@ -14,4 +14,5 @@ public class UserMediaResponse {
     private String url;
     private String link;
     private String videoUrl;
+    private String name;
 }
